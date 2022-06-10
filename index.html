@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegraph account page viewer</title>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> -->
+
+    <style>
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .nav {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .nav>* {
+            margin: 0px 3px;
+        }
+
+        .text-button {
+            border: 1px solid;
+            padding: 0px 6px;
+        }
+
+        .text-button:hover {
+            background: #3c3cdc;
+            color: #fff;
+        }
+
+        .page-list {
+            padding: 0;
+            margin: 3px;
+        }
+
+        .page {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px;
+            border: 2px solid;
+            border-radius: 4px;
+            padding: 3px;
+        }
+
+        .page-list_slim{
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .page-list_slim > .page{
+            max-width: 300px;
+        }
+
+        .page__info {
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .page__image {
+            margin: 3px;
+            max-width: 200px;
+            max-height: 120px;
+            background-color: gray;
+        }
+
+        .page__header {
+            font-size: 1.15em;
+            font-weight: bolder;
+        }
+
+        .info__header {
+            font-weight: bold;
+        }
+
+        .info__caption {
+            /* word-break: break-word; */
+            overflow-wrap: break-word;
+            font-weight: lighter;
+            font-style: italic;
+        }
+
+        .description-container {}
+
+        .hide-link {
+            color: unset;
+            text-decoration: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 479px) {
+            .page-list {
+                margin: 0px;
+            }
+
+            .page {
+                flex-flow: wrap;
+                border-width: 1px;
+            }
+
+            .page__header {
+                font-size: 1.0em;
+            }
+
+            .image-container {
+                justify-content: center;
+            }
+
+            .page__image {
+                max-width: 100%;
+            }
+
+            .info__header,
+            .info__caption {
+                font-size: 0.85em;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <h3 id="header" style="margin: 4px 0px;">Telegraph account page viewer (2)</h3>
+    <div>
+        <form onkeydown="return event.key != 'Enter';">
+            <label for="access-token">
+                access_token:
+                <input type="text" name="access-token" id="access-token"
+                    value="b968da509bb76866c35425099bc0989a5ec3b32997d55286c657e6994bbb">
+            </label>
+            <input type="reset" value="Reset">
+        </form>
+    </div>
+    <div>
+        <button onclick="showAuthUrl(); return false;" style="display: inline-block;">Get Auth URL</button>
+        <a id="auth-url" style="word-wrap: break-word;"></a>
+    </div>
+    <div class="nav">
+        <button onclick="showPages()" id="btn-get-pages">Get pages</button>
+
+        <label for="offset">
+            Offset=
+            <input type="number" name="offset" id="offset" value="0" min="0" placeholder="0 - max" size="6"
+                onchange="validate(this)">
+        </label>
+
+        <label for="limit">
+            Limit=
+            <input type="number" name="limit" id="limit" value="50" min="0" max="200" placeholder="0 - 200" size="6"
+                onchange="validate(this)">
+        </label>
+
+        <label for="thumbnails">
+            <input type="checkbox" id="thumbnails" onchange="toggleThumbnailsVisibility(this.checked === false)"
+                checked>Thumbnails
+        </label>
+        
+        <label for="descriptions"> <input type="checkbox" id="descriptions"
+            onchange="toggleDescriptionsVisibility(this.checked === false)" checked>Descriptions
+        </label>
+
+        <label for="slim">
+            <input type="checkbox" id="slim" onchange="toggleSlimPages(this.checked === true)">Slim
+        </label>
+    </div>
+    <div>
+        <span>
+            Shown
+            <span id="first-article">0</span>
+            -
+            <span id="last-article">0</span>
+            out of
+            <span id="total-articles">0</span>
+            articles
+        </span>
+    </div>
+
+    <div class="nav">
+        <span class="text-button hide-link" id="first-page" onclick="goToFirstPage()">&lt;&lt;</span>
+        <span class="text-button hide-link" id="prev-page" onclick="goToPrevPage()">&lt;</span>
+        <span id="current-page">0</span> / <span id="total-pages">0</span>
+        <span class="text-button hide-link" id="next-page" onclick="goToNextPage()">&gt;</span>
+        <span class="text-button hide-link" id="last-page" onclick="goToLastPage()">&gt;&gt;</span>
+        <input type="number" name="page-id" id="page-id" placeholder="page" min="1" size="6" onchange="validate(this)">
+        <button onclick="goToPage()">Go</button>
+    </div>
+
+    <a href="#jump-up" name="jump-down">Jump down</a>
+    <hr>
+    <div id="pages" class="page-list">
+    </div>
+    <a href="#header" name="jump-up">Jump up</a>
+
+    <script>
+        var hAccessToken, hOffset, hLimit, hThumbnails, hDescription, hSlim, hPageId;
+        var hCurrentPage, hTotalPages;
+        var hFirstAricle, hLastAricle, hTotalArticles;
+        var isLoading = false;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            hAccessToken = document.getElementById('access-token');
+            hOffset = document.getElementById('offset');
+            hLimit = document.getElementById('limit');
+            hThumbnails = document.getElementById('thumbnails');
+            hDescription = document.getElementById('descriptions');
+            hSlim = document.getElementById('slim');
+            hPageId = document.getElementById('page-id');
+
+            hFirstAricle = document.getElementById('first-article');
+            hLastAricle = document.getElementById('last-article');
+            hTotalArticles = document.getElementById('total-articles');
+
+            hCurrentPage = document.getElementById('current-page');
+            hTotalPages = document.getElementById('total-pages');
+
+            params = new URLSearchParams(document.location.search);
+            if (params.get('access_token')) hAccessToken.value = params.get('access_token');
+            if (params.get('offset')) hOffset.value = params.get('offset');
+            if (params.get('limit')) hLimit.value = params.get('limit');
+            if (params.get('thumbnails')) hThumbnails.checked = (params.get('thumbnails') === true);
+            if (params.get('descriptions')) hDescription.checked = (params.get('descriptions') === true);
+            if (params.get('slim')) hSlim.checked = (params.get('slim') === true);
+
+            if (hSlim.checked) document.getElementsByClassName('page-list')[0].classList.add('page-list_slim');
+            else document.getElementsByClassName('page-list')[0].classList.remove('page-list_slim')
+
+            if (params.get('run') != null) showPages();
+        });
+
+        var getJSON = function (url, callback) {
+
+            var xmlhttprequest = new XMLHttpRequest();
+            xmlhttprequest.open('GET', url, true);
+            xmlhttprequest.responseType = 'json';
+
+            xmlhttprequest.onload = function () {
+
+                var status = xmlhttprequest.status;
+
+                if (status == 200) {
+                    callback(null, xmlhttprequest.response);
+                } else {
+                    callback(status, xmlhttprequest.response);
+                }
+            };
+
+            xmlhttprequest.send();
+        };
+
+        function showAuthUrl() {
+            let accessToken = hAccessToken.value;
+            let urlRequest = `https://api.telegra.ph/getAccountInfo?access_token=${accessToken}&fields=["short_name", "auth_url"]`;
+
+            getJSON(urlRequest, function (err, data) {
+                let hAuthUrl = document.getElementById("auth-url")
+                if (err != null) {
+                    console.error(err);
+                    hAuthUrl.innerText = 'Error. Check console for more information.'
+                } else {
+                    if (data['ok'] === false) {
+                        hAuthUrl.innerText = "Wrong access_token."
+                    } else {
+                        let url = data['result']['auth_url']
+                        let name = data['result']['short_name']
+                        hAuthUrl.innerText = `${name}: ${url}`
+                        hAuthUrl.setAttribute("href", url)
+                    }
+                }
+            });
+        }
+
+        function showPages() {
+            if (isLoading) {
+                console.log("Wait for the previous request to be processed.");
+                return;
+            }
+            isLoading = true;
+            let accessToken = hAccessToken.value;
+            let offset = hOffset.value;
+            let limit = hLimit.value;
+            let isThumbnailsVisible = hThumbnails.checked;
+            let isDescriptionsVisible = hDescription.checked
+
+            let urlRequest = `https://api.telegra.ph/getPageList?access_token=${accessToken}&offset=${offset}&limit=${limit}`;
+
+            let hPageList = document.getElementById("pages");
+            hPageList.innerHTML = "";
+            getJSON(urlRequest, function (err, data) {
+                if (err != null) {
+                    console.error(err);
+                } else {
+                    if (data['ok'] === false) {
+                        document.getElementById("auth-url").innerText = "Wrong access_token."
+                    }
+                    else {
+                        _updatePageCounters(data['result']['total_count']);
+                        for (let page of data['result']['pages']) {
+                            hPageList.appendChild(_ParsePage(page, isThumbnailsVisible, isDescriptionsVisible));
+                        }
+                    }
+                }
+                isLoading = false;
+            });
+        }
+
+        function _ParsePage(page_data, isThumbnailsVisible = true, isDescriptionsVisible = true) {
+            let element;
+            let chd_element
+
+            // page
+            let page = document.createElement('div');
+            page.setAttribute("class", "page");
+
+            // page__info
+            let page_info = document.createElement('div');
+            page_info.setAttribute('class', 'page__info');
+            element = document.createElement('span');
+
+            // info__title
+            element.setAttribute('class', 'page__header');
+            element.innerText = [page_data['title']];
+            page_info.appendChild(element)
+            let a_tag = document.createElement('a');
+            a_tag.setAttribute('href', page_data['url']);
+            a_tag.setAttribute('class', 'hide-link')
+            a_tag.appendChild(element);
+            page_info.appendChild(a_tag);
+
+            // info__author_name
+            if (page_data['author_name']) {
+                // author_name div 
+                element = document.createElement('div');
+                // author_name header
+                chd_element = document.createElement('span');
+                chd_element.setAttribute('class', 'info__header');
+                chd_element.innerText = "Author: ";
+                element.appendChild(chd_element);
+                // author_name caption
+                chd_element = document.createElement('span');
+                chd_element.setAttribute('class', 'info__caption');
+                chd_element.innerText = page_data['author_name'];
+                // author_url
+                if (page_data['author_url']) {
+                    let a_tag = document.createElement('a');
+                    a_tag.setAttribute('href', page_data['author_url']);
+                    a_tag.appendChild(chd_element);
+                    element.appendChild(a_tag);
+                } else {
+                    element.appendChild(chd_element);
+                }
+                page_info.appendChild(element);
+            }
+
+            // info__description
+            if (page_data['description']) {
+                // description div 
+                element = document.createElement('div');
+                element.setAttribute('class', 'description-container');
+                if (!isDescriptionsVisible) element.classList.add('hidden');
+                // description header
+                chd_element = document.createElement('span');
+                chd_element.setAttribute('class', 'info__header');
+                chd_element.innerText = "Description: ";
+                element.appendChild(chd_element);
+                // description caption
+                chd_element = document.createElement('span');
+                chd_element.setAttribute('class', 'info__caption');
+                chd_element.innerHTML = page_data['description'];
+                element.appendChild(chd_element);
+                page_info.appendChild(element);
+            }
+
+            // info__views
+            // views div 
+            element = document.createElement('div');
+            // views header
+            chd_element = document.createElement('span');
+            chd_element.setAttribute('class', 'info__header');
+            chd_element.innerText = "Views: ";
+            element.appendChild(chd_element);
+            // views caption
+            chd_element = document.createElement('span');
+            chd_element.setAttribute('class', 'info__caption');
+            chd_element.innerText = page_data['views'];
+            element.appendChild(chd_element);
+            page_info.appendChild(element);
+
+            page.appendChild(page_info);
+
+            // page__image
+            if (page_data['image_url']) {
+                image = document.createElement("img");
+                image.setAttribute('class', 'page__image');
+                image.setAttribute("src", page_data['image_url']);
+                // <a>image</a> 
+                element = document.createElement('a');
+                element.setAttribute('href', page_data['url']);
+                element.setAttribute('class', 'image-container')
+                if (!isThumbnailsVisible) element.classList.add('hidden');
+                element.appendChild(image);
+                page.appendChild(element);
+            }
+
+            // page.appendChild(document.createElement('hr'));
+            return page;
+        };
+
+        function _updatePageCounters(totalArticles) {
+
+            hFirstAricle.innerText = hOffset.value - 0 + 1;
+            hLastAricle.innerText = Math.min(totalArticles, parseInt(hOffset.value) + parseInt(hLimit.value));
+            hTotalArticles.innerText = totalArticles;
+
+            hCurrentPage.innerText = Math.ceil((hOffset.value - 0 + 1) / hLimit.value);
+            hTotalPages.innerText = Math.ceil(hTotalArticles.innerHTML / hLimit.value);
+        }
+
+        function toggleThumbnailsVisibility(isVisible) {
+            let elements = document.getElementsByClassName('image-container');
+            if (isVisible) for (let e of elements)
+                e.classList.add('hidden');
+            else for (let e of elements)
+                e.classList.remove('hidden')
+        }
+
+        function toggleDescriptionsVisibility(isVisible) {
+            let elements = document.getElementsByClassName('description-container');
+            if (isVisible) for (let e of elements)
+                e.classList.add('hidden');
+            else for (let e of elements)
+                e.classList.remove('hidden')
+        }
+
+        function toggleSlimPages(isSlim) {
+            let elements = document.getElementsByClassName('page-list');
+            if (isSlim) for (let e of elements)
+                e.classList.add('page-list_slim');
+            else for (let e of elements)
+                e.classList.remove('page-list_slim')
+        }
+
+        function goToPage() {
+            hOffset.value = (hPageId.value - 1) * hLimit.value;
+            showPages();
+        }
+
+        function goToFirstPage() {
+            hOffset.value = 0;
+            showPages();
+        }
+
+        function goToPrevPage() {
+            hOffset.value = hOffset.value - hLimit.value;
+            showPages();
+        }
+
+        function goToNextPage() {
+            hOffset.value = parseInt(hOffset.value) + parseInt(hLimit.value);
+            showPages();
+        }
+
+        function goToLastPage() {
+            let lastPageOffset;
+            if (hTotalArticles.innerText / hLimit.value % 1 == 0) {
+                lastPageOffset = (hTotalPages.value - 1) * hLimit.value;
+            } else { lastPageOffset = (hTotalPages.innerText - 1) * hLimit.value; }
+            hOffset.value = lastPageOffset;
+            showPages();
+        }
+
+        function validate(element) {
+            if (element.max && element.value > element.max) {
+                element.value = element.max;
+            } else if (element.min && element.value < element.min) {
+                element.value = element.min;
+            }
+        }
+    </script>
+</body>
+
+</html>
