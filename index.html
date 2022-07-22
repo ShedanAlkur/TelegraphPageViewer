@@ -229,9 +229,9 @@
             if (params.get('access_token')) hAccessToken.value = params.get('access_token');
             if (params.get('offset')) hOffset.value = params.get('offset');
             if (params.get('limit')) hLimit.value = params.get('limit');
-            if (params.get('thumbnails')) hThumbnails.checked = (params.get('thumbnails') === true);
-            if (params.get('descriptions')) hDescription.checked = (params.get('descriptions') === true);
-            if (params.get('slim')) hSlim.checked = (params.get('slim') === true);
+            if (params.get('thumbnails')) hThumbnails.checked = (params.get('thumbnails') === 'true');
+            if (params.get('descriptions')) hDescription.checked = (params.get('descriptions') === 'true');
+            if (params.get('slim')) hSlim.checked = (params.get('slim') === 'true');
 
             if (hSlim.checked) document.getElementsByClassName('page-list')[0].classList.add('page-list_slim');
             else document.getElementsByClassName('page-list')[0].classList.remove('page-list_slim')
