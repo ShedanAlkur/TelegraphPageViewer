@@ -2,8 +2,8 @@
 // @name         Image navigation on telegra.ph
 // @namespace    https://github.com/ShedanAlkur/
 // @version      0.1.1
-// @downloadURL  https://raw.githubusercontent.com/ShedanAlkur/TelegraphPageViewer/anime/Telegraph_image_navigation.user.js
-// @updateURL    https://raw.githubusercontent.com/ShedanAlkur/TelegraphPageViewer/anime/Telegraph_image_navigation.user.js
+// @downloadURL  https://github.com/ShedanAlkur/TelegraphPageViewer/raw/anime/Telegraph_image_navigation.user.js
+// @updateURL    https://github.com/ShedanAlkur/TelegraphPageViewer/raw/anime/Telegraph_image_navigation.user.js
 // @description  More options for navigating between pictures on telegra.ph
 // @author       ShedanAlkur
 // @match        https://telegra.ph/*
