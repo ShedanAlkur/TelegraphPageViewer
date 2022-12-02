@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Image navigation on telegra.ph
 // @namespace    https://github.com/ShedanAlkur/
-// @version      0.1.1
+// @version      0.1.2
 // @downloadURL  https://github.com/ShedanAlkur/TelegraphPageViewer/raw/anime/Telegraph_image_navigation.user.js
 // @downloadURL  https://github.com/ShedanAlkur/TelegraphPageViewer/raw/master/Telegraph_image_navigation.user.js
 // @updateURL    https://github.com/ShedanAlkur/TelegraphPageViewer/raw/anime/Telegraph_image_navigation.user.js
