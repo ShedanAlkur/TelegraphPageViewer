@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Image navigation on telegra.ph
+// @name         Image navigation on telegraph
 // @namespace    https://github.com/ShedanAlkur/
-// @version      0.1.2
+// @version      0.1.3
 // @downloadURL  https://github.com/ShedanAlkur/TelegraphPageViewer/raw/anime/Telegraph_image_navigation.user.js
 // @downloadURL  https://github.com/ShedanAlkur/TelegraphPageViewer/raw/master/Telegraph_image_navigation.user.js
 // @updateURL    https://github.com/ShedanAlkur/TelegraphPageViewer/raw/anime/Telegraph_image_navigation.user.js
@@ -29,7 +29,7 @@
     const backwardLinkStyle =
         `.backward-link{position:absolute;width:calc(40% + 100px);height:100%;left:-100px;border:none !important}.backward-link:hover{background-color:rgba(0,0,0,.2)}`
     const imageCounterStyle =
-        `.image-counter{display:inline-block;position:fixed;z-index:999;bottom:0;left:50%;transform:translate(0,-50%);padding:4px 12px;color:#000;background-color:#fff;font-family:CustomSansSerif,'Lucida Grande',Arial,sans-serif;font-weight:600;font-style:normal;font-size:17px;text-decoration:none;border:2px solid #333;border-radius:16px;text-transform:uppercase;opacity:70%;cursor:default}.image-counter:hover{opacity:30%}.image-counter:empty{display:none}`;
+        `.image-counter{display:inline-block;position:fixed;z-index:999;bottom:0;left:50%;transform:translate(-50%,0);margin-bottom:12px;padding:4px 12px;color:#000;background-color:#fff;font-family:CustomSansSerif,'Lucida Grande',Arial,sans-serif;font-weight:600;font-style:normal;font-size:17px;text-decoration:none;border:2px solid #333;border-radius:16px;text-transform:uppercase;opacity:70%;cursor:default}.image-counter:hover{opacity:30%}.image-counter:empty{display:none}`;
 
     function addGlobalStyle(css) {
         var head, style;
@@ -72,111 +72,152 @@
     }
 
 
-    window.addEventListener('load', function () {
-        document.querySelector('html').style.scrollBehavior = 'smooth';
+    function runExtension() {
+        window.addEventListener('load', function () {
+            document.querySelector('html').style.scrollBehavior = 'smooth';
 
-        // addGlobalStyle('html { background-color: red ! important; }');
-        addGlobalStyle(backwardLinkStyle);
-        addGlobalStyle(imageCounterStyle);
+            // addGlobalStyle('html { background-color: red ! important; }');
+            addGlobalStyle(backwardLinkStyle);
+            addGlobalStyle(imageCounterStyle);
 
-        _images = document.querySelectorAll('img');
+            _images = document.querySelectorAll('img');
 
-        var index = 0, indexTo = 0, hrefS = '#_img-';
-        var linkB, linkF;
-        _imageCount = _images.length
-        for (; index < _imageCount; index++) {
-            indexTo = ((index <= 0) ? _imageCount - 1 : index - 1);
-            linkB = document.createElement('a');
-            linkB.setAttribute('href', hrefS + indexTo);
-            linkB.setAttribute('data-index', index);
-            linkB.setAttribute('data-indexto', indexTo);
-            linkB.classList.add('backward-link');
+            var index = 0, indexTo = 0, hrefS = '#_img-';
+            var linkB, linkF;
+            _imageCount = _images.length
+            for (; index < _imageCount; index++) {
+                indexTo = ((index <= 0) ? _imageCount - 1 : index - 1);
+                linkB = document.createElement('a');
+                linkB.setAttribute('href', hrefS + indexTo);
+                linkB.setAttribute('data-index', index);
+                linkB.setAttribute('data-indexto', indexTo);
+                linkB.classList.add('backward-link');
 
-            indexTo = ((index < _imageCount - 1) ? index + 1 : 0);
-            _images[index].setAttribute('id', '_img-' + index);
-            _images[index].setAttribute('data-index', index);
-            _images[index].setAttribute('data-indexto', indexTo);
-            linkF = document.createElement('a');
-            linkF.setAttribute('href', hrefS + indexTo);
+                indexTo = ((index < _imageCount - 1) ? index + 1 : 0);
+                _images[index].setAttribute('id', '_img-' + index);
+                _images[index].setAttribute('data-index', index);
+                _images[index].setAttribute('data-indexto', indexTo);
+                linkF = document.createElement('a');
+                linkF.setAttribute('href', hrefS + indexTo);
 
-            _images[index].parentNode.appendChild(linkB);
-            _images[index].parentNode.appendChild(linkF);
-            linkF.appendChild(_images[index]);
+                _images[index].parentNode.appendChild(linkB);
+                _images[index].parentNode.appendChild(linkF);
+                linkF.appendChild(_images[index]);
 
-            linkF.addEventListener('click', onLinkClick);
-            linkB.addEventListener('click', onLinkClick);
-        }
-
-        if (_images) {
-            _hCounter = this.document.createElement('div');
-            _hCounter.classList.add('image-counter');
-            document.querySelector('body').appendChild(_hCounter);
-
-            // _hCounter.addEventListener('click', (event) => {
-            //     console.log(`_currentIndex ${_currentIndex} - _scrollIndex ${_scrollIndex}`)
-            // })
-        }
-
-        window.addEventListener('keydown', (event) => {
-            if (event.key === 'ArrowRight') {
-                _currentIndex = Math.floor(_currentIndex + 1);
-                if (_currentIndex >= _imageCount) _currentIndex = 0;
-                toImage();
-            } else if (event.key === 'ArrowLeft') {
-                _currentIndex = Math.ceil(_currentIndex - 1);
-                if (_currentIndex < 0) _currentIndex = _imageCount - 1;
-                toImage();
+                linkF.addEventListener('click', onLinkClick);
+                linkB.addEventListener('click', onLinkClick);
             }
+
+            if (_images) {
+                _hCounter = this.document.createElement('div');
+                _hCounter.classList.add('image-counter');
+                document.querySelector('body').appendChild(_hCounter);
+
+                // _hCounter.addEventListener('click', (event) => {
+                //     console.log(`_currentIndex ${_currentIndex} - _scrollIndex ${_scrollIndex}`)
+                // })
+            }
+
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'ArrowRight') {
+                    _currentIndex = Math.floor(_currentIndex + 1);
+                    if (_currentIndex >= _imageCount) _currentIndex = 0;
+                    toImage();
+                } else if (event.key === 'ArrowLeft') {
+                    _currentIndex = Math.ceil(_currentIndex - 1);
+                    if (_currentIndex < 0) _currentIndex = _imageCount - 1;
+                    toImage();
+                }
+            });
+
+            window.addEventListener('scroll', (event) => {
+                if (_preventScrollIndex) {
+                    clearTimeout(_preventScrollIndexTimeout);
+                    _preventScrollIndexTimeout =
+                        setTimeout(_preventScrollIndexDisable, SCROLL_APPLY_TIME);
+                    return;
+                }
+                // console.log(`scroll ${_preventScrollIndex}`);
+
+                _scrollIndex = 0;
+                var rect;
+                var hiddenCounter = true;
+                for (; _scrollIndex < _imageCount; _scrollIndex++) {
+                    rect = _images[_scrollIndex].getBoundingClientRect();
+                    if (rect.top > window.innerHeight) { // if current image under the view
+                        _scrollIndex = _scrollIndex - .5; break;
+                    }
+                    if ((rect.top + rect.bottom) / 2 >= 0) { // if current image in the view
+                        hiddenCounter = false;
+                        break;
+                    }
+                }
+                if (rect.bottom < 0) { // if last image above the view
+                    _scrollIndex = _imageCount - 0.5;
+                }
+
+                if (_scrollIndex > _imageCount) {
+                    _scrollIndex = _imageCount - 1;
+                    console.log("How I ended up here?!");
+                }
+
+                if (hiddenCounter) {
+                    clearTimeout(_scrollTimeout);
+                    _hCounter.innerHTML = '';
+                    _scrollTimeout = setTimeout(() => {
+                        _currentIndex = _scrollIndex;
+                    }, SCROLL_APPLY_TIME);
+                } else {
+                    clearTimeout(_scrollTimeout);
+                    _scrollTimeout = setTimeout(() => {
+                        _currentIndex = _scrollIndex;
+                        updateCounter(COUNTER_FADEOUT_TIME - SCROLL_APPLY_TIME);
+                    }, SCROLL_APPLY_TIME);
+
+                    updateCounter();
+                }
+
+            })
+
+        }, false)
+    }
+
+    var _useImageNavigationExt = localStorage.getItem('_useImageNavigationExt') == 'true';
+    if (_useImageNavigationExt) {
+        console.log('%c"Image navigation on telegra.ph" is running', 'color: green;');
+        runExtension();
+    }
+
+    window.addEventListener('load', function () {
+
+        const hLabelUseExt = document.createElement('label');
+        document.querySelector('address').appendChild(hLabelUseExt);
+
+        const hDot = document.createElement('span');
+        hDot.innerText = '•';
+        hDot.style.padding = '0 7px';
+        hLabelUseExt.appendChild(hDot);
+
+        var hInputUseExt = document.createElement('input');
+        hInputUseExt.setAttribute('type', 'checkbox');
+        hInputUseExt.checked = _useImageNavigationExt;
+        hInputUseExt.style.setProperty('accent-color', '#79828B');
+        hLabelUseExt.appendChild(hInputUseExt)
+
+        const hTextUseExt = document.createTextNode('Enable image navigation');
+        hLabelUseExt.appendChild(hTextUseExt)
+
+        hInputUseExt.addEventListener('change', (event) => {
+            if (hInputUseExt.checked) {
+                localStorage.setItem('_useImageNavigationExt', true);
+                // runExtension();
+            } else {
+                localStorage.setItem('_useImageNavigationExt', false);
+                // window.location.reload();
+            }
+            window.location.reload();
         });
 
-        window.addEventListener('scroll', (event) => {
-            if (_preventScrollIndex) {
-                clearTimeout(_preventScrollIndexTimeout);
-                _preventScrollIndexTimeout =
-                    setTimeout(_preventScrollIndexDisable, SCROLL_APPLY_TIME);
-                return;
-            }
-            // console.log(`scroll ${_preventScrollIndex}`);
-
-            _scrollIndex = 0;
-            var rect;
-            var hiddenCounter = true;
-            for (; _scrollIndex < _imageCount; _scrollIndex++) {
-                rect = _images[_scrollIndex].getBoundingClientRect();
-                if (rect.top > window.innerHeight) { // if current image under the view
-                    _scrollIndex = _scrollIndex - .5; break;
-                }
-                if ((rect.top + rect.bottom) / 2 >= 0) { // if current image in the view
-                    hiddenCounter = false;
-                    break;
-                }
-            }
-            if (rect.bottom < 0) { // if last image above the view
-                _scrollIndex = _imageCount - 0.5;
-            }
-
-            if (_scrollIndex > _imageCount) {
-                _scrollIndex = _imageCount - 1;
-                console.log("How I ended up here?!");
-            }
-
-            if (hiddenCounter) {
-                clearTimeout(_scrollTimeout);
-                _hCounter.innerHTML = '';
-                _scrollTimeout = setTimeout(() => {
-                    _currentIndex = _scrollIndex;
-                }, SCROLL_APPLY_TIME);
-            } else {
-                clearTimeout(_scrollTimeout);
-                _scrollTimeout = setTimeout(() => {
-                    _currentIndex = _scrollIndex;
-                    updateCounter(COUNTER_FADEOUT_TIME - SCROLL_APPLY_TIME);
-                }, SCROLL_APPLY_TIME);
-
-                updateCounter();
-            }
-
-        })
-
     }, false)
+
 })();
