@@ -1,11 +1,9 @@
 // ==UserScript==
 // @name         Image navigation on telegraph
 // @namespace    https://github.com/ShedanAlkur/
-// @version      0.1.4
+// @version      0.1.5
 // @downloadURL  https://github.com/ShedanAlkur/TelegraphPageViewer/raw/anime/Telegraph_image_navigation.user.js
-// @downloadURL  https://github.com/ShedanAlkur/TelegraphPageViewer/raw/master/Telegraph_image_navigation.user.js
 // @updateURL    https://github.com/ShedanAlkur/TelegraphPageViewer/raw/anime/Telegraph_image_navigation.user.js
-// @updateURL    https://github.com/ShedanAlkur/TelegraphPageViewer/raw/master/Telegraph_image_navigation.user.js
 // @description  More options for navigating between pictures on telegra.ph
 // @author       ShedanAlkur
 // @match        https://telegra.ph/*
@@ -26,7 +24,8 @@
         `.image-counter{display:inline-block;position:fixed;z-index:999;bottom:0;left:50%;transform:translate(-50%,0);margin-bottom:12px;padding:4px 12px;color:#000;background-color:#fff;font-family:CustomSansSerif,'Lucida Grande',Arial,sans-serif;font-weight:600;font-style:normal;font-size:17px;text-decoration:none;border:2px solid #333;border-radius:16px;text-transform:uppercase;opacity:70%;cursor:default}.image-counter:hover{opacity:30%}.image-counter:empty{display:none}`;
     const addressCheckbox =
         `.address-checkbox input{accent-color:rgb(121,130,139)}.address-checkbox::before{content:'•';padding:0 7px}`;
-
+    const darkmode =
+        `.darkmode body{background-color:#191919}.darkmode .tl_article .tl_article_content,.darkmode .tl_article .tl_article_content .ql-editor *,.darkmode .tl_article.tl_article_edit.title_focused [data-label]:after,.darkmode .tl_article.tl_article_edit.title_required h1[data-placeholder]:before{color:rgba(255,255,255,.75)}.darkmode .tl_article .tl_article_content,.darkmode .tl_article h1,.darkmode .tl_article h2{color:rgba(255,255,255,.8)}.darkmode .tl_article .share_button,.darkmode .tl_article_edit .publish_button,.darkmode .tl_article_editable .edit_button,.darkmode .tl_article_saving .publish_button{color:rgba(255,255,255,.8);background-color:rgba(255,255,255,.2);border-color:rgba(255,255,255,0)}.darkmode .tl_article .tl_article_content code,.darkmode .tl_article .tl_article_content pre{background-color:rgba(255,255,255,.2)}.darkmode .tl_article .tl_article_content blockquote,.darkmode .tl_article a[href]{border-color:rgba(255,255,255,.75)}.darkmode .account,.darkmode .tl_article address{color:rgba(255,255,255,.5)}.darkmode .address[data-placeholder].empty:after,.darkmode .tl_article.tl_article_edit [data-placeholder].empty:before,.darkmode .tl_article.tl_article_edit figcaption[data-placeholder].empty:after{color:rgba(255,255,255,.44)}.darkmode img{filter:brightness(80%)}*{transition:background-color .1s linear}`;
     var _images;
     var _currentIndex = 0, _imageCount = 0, _scrollIndex = 0;
     var _hCounter;
@@ -34,6 +33,7 @@
     var _counterTimeout, _scrollTimeout, _preventScrollIndexTimeout;
     var _preventScrollIndex = false;
     var _useImageNavigationExt = localStorage.getItem('_useImageNavigationExt') == 'true';
+    var _useDarkmode = localStorage.getItem('_useDarkmode') == 'true';
 
     function addGlobalStyle(css) {
         var head, style;
@@ -52,7 +52,7 @@
     }
 
     function disableScrollIndexPrevention() {
-        _preventScrollIndex = false;        
+        _preventScrollIndex = false;
         history.replaceState(null, null, ' ');
     }
 
@@ -94,12 +94,28 @@
     function handleChange_checkboxWrapImage(event) {
         event.target.disabled = true;
         if (event.target.checked) {
+            _useImageNavigationExt = true;
             localStorage.setItem('_useImageNavigationExt', true);
             EnableImageWrapping();
         } else {
+            _useImageNavigationExt = false;
             localStorage.setItem('_useImageNavigationExt', false);
             DisableImageWrapping();
         }
+        event.target.disabled = false;
+        // window.location.reload();
+    }
+
+    function handleChange_checkboxDarkmode(event) {
+        event.target.disabled = true;
+        if (event.target.checked) {
+            _useDarkmode = true;
+            localStorage.setItem('_useDarkmode', true);
+        } else {
+            _useDarkmode = false;
+            localStorage.setItem('_useDarkmode', false);
+        }
+        document.querySelector('html').classList.toggle('darkmode');
         event.target.disabled = false;
         // window.location.reload();
     }
@@ -150,7 +166,6 @@
             updateCounter();
         }
     }
-
 
     //
     // Wrapping images
@@ -212,6 +227,9 @@
         _images = [];
     }
 
+    //  
+    // MAIN PART
+    //
 
     window.addEventListener('load', function () {
         console.log('%c"Image navigation on telegraph" is running', 'color: yellow;');
@@ -222,9 +240,8 @@
         //
 
         document.querySelector('html').style.scrollBehavior = 'smooth';
-        addGlobalStyle(backwardLinkStyle);
-        addGlobalStyle(imageCounterStyle);
-        addGlobalStyle(addressCheckbox);
+        addGlobalStyle(backwardLinkStyle + imageCounterStyle + addressCheckbox);
+        addGlobalStyle(darkmode);
 
         //
         // Adding an extension control checkbox
@@ -239,8 +256,7 @@
         hInputUseExt.checked = _useImageNavigationExt;
         _hLabelUseExt.appendChild(hInputUseExt)
 
-        const hTextUseExt = document.createTextNode('Image navigation');
-        _hLabelUseExt.appendChild(hTextUseExt)
+        _hLabelUseExt.appendChild(document.createTextNode('Image navigation'));
 
         hInputUseExt.addEventListener('change', handleChange_checkboxWrapImage);
 
@@ -251,10 +267,32 @@
             });
 
         //
+        // Adding an darkmode control checkbox
+        //
+
+        var _hLabelUseDarkmode = document.createElement('label');
+        document.querySelector('address').appendChild(_hLabelUseDarkmode);
+        _hLabelUseDarkmode.classList.add('address-checkbox');
+
+        var hInputDarkmode = document.createElement('input');
+        hInputDarkmode.setAttribute('type', 'checkbox');
+        hInputDarkmode.checked = _useDarkmode;
+        _hLabelUseDarkmode.appendChild(hInputDarkmode)
+
+        _hLabelUseDarkmode.appendChild(document.createTextNode('Dark mode'));
+
+        hInputDarkmode.addEventListener('change', handleChange_checkboxDarkmode);
+
+        //
         // Wrapping images
         //
+
         if (_useImageNavigationExt) EnableImageWrapping();
 
+        if (_useDarkmode) {
+            document.querySelector('html').classList.toggle('darkmode');
+        }
+        
         console.log('%c"Image navigation on telegraph" has been successfully launched', 'color: green;');
     }, false)
 
