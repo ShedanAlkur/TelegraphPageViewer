@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Image navigation on telegraph
 // @namespace    https://github.com/ShedanAlkur/
-// @version      0.1.5
+// @version      0.1.6
 // @downloadURL  https://github.com/ShedanAlkur/TelegraphPageViewer/raw/anime/Telegraph_image_navigation.user.js
 // @updateURL    https://github.com/ShedanAlkur/TelegraphPageViewer/raw/anime/Telegraph_image_navigation.user.js
 // @description  More options for navigating between pictures on telegra.ph
@@ -9,7 +9,7 @@
 // @match        https://telegra.ph/*
 // @icon         https://telegra.ph/favicon.ico?1
 // @grant        none
-// @run-at       document-end
+// @run-at       document-start
 // ==/UserScript==
 
 (function () {
@@ -19,21 +19,24 @@
     const SCROLL_APPLY_TIME = 120;
 
     const backwardLinkStyle =
-        `.backward-link{position:absolute;width:calc(40% + 100px);height:100%;left:-100px;border:none !important}.backward-link:hover{background-color:rgba(0,0,0,.15)}`
+        `.backward-link{position:absolute;z-index:2;width:calc(40% + 100px);height:100%;left:-100px;border:none !important}.backward-link:hover{background-color:rgba(0,0,0,.15)}`
     const imageCounterStyle =
         `.image-counter{display:inline-block;position:fixed;z-index:999;bottom:0;left:50%;transform:translate(-50%,0);margin-bottom:12px;padding:4px 12px;color:#000;background-color:#fff;font-family:CustomSansSerif,'Lucida Grande',Arial,sans-serif;font-weight:600;font-style:normal;font-size:17px;text-decoration:none;border:2px solid #333;border-radius:16px;text-transform:uppercase;opacity:70%;cursor:default}.image-counter:hover{opacity:30%}.image-counter:empty{display:none}`;
     const addressCheckbox =
         `.address-checkbox input{accent-color:rgb(121,130,139)}.address-checkbox::before{content:'•';padding:0 7px}`;
+    const buttonTop =
+        `.button-top{position:fixed;z-index:9;bottom:0;left:0;margin:12px;opacity:0;visibility:hidden}.button-top.show{opacity:70%;visibility:visible;}`;
     const darkmode =
-        `.darkmode body{background-color:#191919}.darkmode .tl_article .tl_article_content,.darkmode .tl_article .tl_article_content .ql-editor *,.darkmode .tl_article.tl_article_edit.title_focused [data-label]:after,.darkmode .tl_article.tl_article_edit.title_required h1[data-placeholder]:before{color:rgba(255,255,255,.75)}.darkmode .tl_article .tl_article_content,.darkmode .tl_article h1,.darkmode .tl_article h2{color:rgba(255,255,255,.8)}.darkmode .tl_article .share_button,.darkmode .tl_article_edit .publish_button,.darkmode .tl_article_editable .edit_button,.darkmode .tl_article_saving .publish_button{color:rgba(255,255,255,.8);background-color:rgba(255,255,255,.2);border-color:rgba(255,255,255,0)}.darkmode .tl_article .tl_article_content code,.darkmode .tl_article .tl_article_content pre{background-color:rgba(255,255,255,.2)}.darkmode .tl_article .tl_article_content blockquote,.darkmode .tl_article a[href]{border-color:rgba(255,255,255,.75)}.darkmode .account,.darkmode .tl_article address{color:rgba(255,255,255,.5)}.darkmode .address[data-placeholder].empty:after,.darkmode .tl_article.tl_article_edit [data-placeholder].empty:before,.darkmode .tl_article.tl_article_edit figcaption[data-placeholder].empty:after{color:rgba(255,255,255,.44)}.darkmode img{filter:brightness(80%)}*{transition:background-color .1s linear}`;
+        `.darkmode body{background-color:#191919}.darkmode .tl_article .tl_article_content,.darkmode .tl_article .tl_article_content .ql-editor *,.darkmode .tl_article.tl_article_edit.title_focused [data-label]:after,.darkmode .tl_article.tl_article_edit.title_required h1[data-placeholder]:before{color:rgba(255,255,255,.75)}.darkmode .tl_article .tl_article_content,.darkmode .tl_article h1,.darkmode .tl_article h2{color:rgba(255,255,255,.8)}.darkmode .button,.darkmode .tl_article .share_button,.darkmode .tl_article_edit .publish_button,.darkmode .tl_article_editable .edit_button,.darkmode .tl_article_saving .publish_button{color:rgba(255,255,255,.8);background-color:rgba(255,255,255,.2);border-color:rgba(255,255,255,0)}.darkmode .tl_article .tl_article_content code,.darkmode .tl_article .tl_article_content pre{background-color:rgba(255,255,255,.2)}.darkmode .tl_article .tl_article_content blockquote,.darkmode .tl_article a{border-color:rgba(255,255,255,.75)}.darkmode .account,.darkmode .tl_article address,.darkmode .tl_article address a{color:rgba(255,255,255,.5)}.darkmode .address[data-placeholder].empty:after,.darkmode .tl_article.tl_article_edit [data-placeholder].empty:before,.darkmode .tl_article.tl_article_edit figcaption[data-placeholder].empty:after{color:rgba(255,255,255,.44)}.darkmode img{filter:brightness(80%)}*{transition:background-color .1s linear}`;
     var _images;
     var _currentIndex = 0, _imageCount = 0, _scrollIndex = 0;
     var _hCounter;
-    var _hLabelUseExt, hInputUseExt;
+    var _hLabelUseExt, hInputUseExt, _hTopButton;
     var _counterTimeout, _scrollTimeout, _preventScrollIndexTimeout;
     var _preventScrollIndex = false;
     var _useImageNavigationExt = localStorage.getItem('_useImageNavigationExt') == 'true';
     var _useDarkmode = localStorage.getItem('_useDarkmode') == 'true';
+    var _useSmoothScroll = localStorage.getItem('_useSmoothScroll') == 'true';
 
     function addGlobalStyle(css) {
         var head, style;
@@ -76,7 +79,7 @@
     }
 
     //
-    // Event handlers 
+    // Event handlers
     //
 
     function handleKeydown(event) {
@@ -120,7 +123,28 @@
         // window.location.reload();
     }
 
+    function handleChange_checkboxSmoothScroll(event) {
+        event.target.disabled = true;
+        if (event.target.checked) {
+            _useSmoothScroll = true;
+            localStorage.setItem('_useSmoothScroll', true);
+            document.querySelector('html').style.scrollBehavior = 'smooth';
+        } else {
+            _useSmoothScroll = false;
+            localStorage.setItem('_useSmoothScroll', false);
+            document.querySelector('html').style.removeProperty('scroll-behavior');
+        }
+        event.target.disabled = false;
+        // window.location.reload();
+    }
+
     function handleScroll(event) {
+        if (window.scrollY > 250) {
+            _hTopButton.classList.add('show');
+        } else {
+            _hTopButton.classList.remove('show');
+        }
+
         if (_preventScrollIndex) {
             clearTimeout(_preventScrollIndexTimeout);
             _preventScrollIndexTimeout =
@@ -227,11 +251,11 @@
         _images = [];
     }
 
-    //  
+    //
     // MAIN PART
     //
 
-    window.addEventListener('load', function () {
+    window.addEventListener('DOMContentLoaded', function () {
         console.log('%c"Image navigation on telegraph" is running', 'color: yellow;');
         history.replaceState(null, null, ' ');
 
@@ -239,9 +263,26 @@
         // Adding and changing the page style
         //
 
-        document.querySelector('html').style.scrollBehavior = 'smooth';
-        addGlobalStyle(backwardLinkStyle + imageCounterStyle + addressCheckbox);
+        if (_useSmoothScroll) {
+            document.querySelector('html').style.scrollBehavior = 'smooth';
+        }
+        addGlobalStyle(buttonTop + addressCheckbox + backwardLinkStyle + imageCounterStyle);
         addGlobalStyle(darkmode);
+
+        //
+        // Adding back to top button
+        //
+
+        _hTopButton = document.createElement('button');
+        _hTopButton.classList.add('button');
+        _hTopButton.classList.add('button-top');
+        _hTopButton.innerHTML = 'UP';
+        _hTopButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        document.querySelector('body').appendChild(_hTopButton);
 
         //
         // Adding an extension control checkbox
@@ -284,6 +325,23 @@
         hInputDarkmode.addEventListener('change', handleChange_checkboxDarkmode);
 
         //
+        // Adding an smooth scroll control checkbox
+        //
+
+        var _hLabelUseSmoothScroll = document.createElement('label');
+        document.querySelector('address').appendChild(_hLabelUseSmoothScroll);
+        _hLabelUseSmoothScroll.classList.add('address-checkbox');
+
+        var hInputSmoothScroll = document.createElement('input');
+        hInputSmoothScroll.setAttribute('type', 'checkbox');
+        hInputSmoothScroll.checked = _useSmoothScroll;
+        _hLabelUseSmoothScroll.appendChild(hInputSmoothScroll)
+
+        _hLabelUseSmoothScroll.appendChild(document.createTextNode('Smooth scroll'));
+
+        hInputSmoothScroll.addEventListener('change', handleChange_checkboxSmoothScroll);
+
+        //
         // Wrapping images
         //
 
@@ -292,7 +350,7 @@
         if (_useDarkmode) {
             document.querySelector('html').classList.toggle('darkmode');
         }
-        
+
         console.log('%c"Image navigation on telegraph" has been successfully launched', 'color: green;');
     }, false)
 
