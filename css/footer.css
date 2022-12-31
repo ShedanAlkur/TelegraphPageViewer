@@ -1,0 +1,20 @@
+.footer {
+    text-align: center;
+}
+
+.footer ul {
+    padding: 0;
+}
+
+.footer li {
+    display: inline;
+}
+
+.footer a {
+    text-decoration: inherit;
+    color: inherit;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}

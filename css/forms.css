@@ -1,0 +1,158 @@
+.search-form {
+    display: block;
+    width: 350px;
+    min-width: 282px;
+    margin: 10px auto;
+    background-color: rgb(255, 255, 255);
+    border-radius: 10px;
+    /* offset-x | offset-y | blur-radius | spread-radius | color */
+    box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.2);
+}
+
+.setting-form {
+    display: table;
+    margin: 10px auto;
+    padding: 8px;
+    background-color: rgb(255, 255, 255);
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.2);
+}
+
+.setting__row{
+    display: flex;
+    justify-content: space-between;
+}
+
+.setting-form input[type=checkbox] {
+    margin: 0;
+}
+
+.search-form__row {
+    display: flex;
+    padding: 6px 8px;
+}
+
+.search-form__row:not(:last-child) {
+    padding-bottom: 0;
+}
+
+.search-form__row>* {
+    margin: 0 2px;
+    padding: 2px;
+}
+
+/* Form labels and inputs */
+
+label.search-form__access_token {
+    /* background-color: rgb(147, 165, 42); */
+}
+
+input.search-form__access_token {
+    /* background-color: rgb(255, 0, 179); */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+}
+
+label.search-form__offset {
+    /* background-color: brown; */
+}
+
+input.search-form__offset {
+    /* background-color: blue; */
+    flex-grow: 1;
+    min-width: 6em;
+}
+
+label.search-form__limit {
+    /* background-color: rgb(88, 172, 140); */
+}
+
+input.search-form__limit {
+    /* background-color: rgb(247, 66, 66); */
+    flex-grow: 1;
+    min-width: 3em;
+}
+
+/* Paginator */
+
+.paginator {
+    margin: 8px 0;
+    text-align: center;
+}
+
+.paginator menu {
+    display: table;
+    border-collapse: collapse;
+    padding: 0;
+    margin: 5px auto;
+}
+
+/* Paginator cells */
+
+.paginator menu>* {
+    --color-main: black;
+    display: table-cell;
+    border: 1px solid var(--color-main);
+    /* line-height: 33px; */
+    min-width: 35px;
+    text-decoration: none;
+    color: var(--color-main);
+}
+
+.paginator menu>*:not(:last-child) {
+    border-right: none;
+}
+
+.menu-button_disabled {
+    --color-main: gray !important;
+    pointer-events: none;
+}
+
+.paginator menu>a:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.page-selector-wrapper {}
+
+.page-selector {
+    /* background-color: aqua; */
+    display: flex;
+    align-items: stretch;
+    height: 33px;
+}
+
+.page-selector>input[type=number],
+.page-selector>input[type=submit] {
+    border: none;
+    background-color: #0000;
+    align-items: center;
+    display: flex;
+}
+
+.page-selector>input[type=number] {
+    /* background-color: rgb(169, 170, 78); */
+    flex: 1;
+    min-width: 3em;
+    margin: 4px;
+    width: 6em;
+    /* font-size: 0.9em; */
+}
+
+.page-selector>input[type=submit] {
+    /* background-color: rgb(81, 165, 95); */
+    padding: 0 9px;
+    background-color: rgba(0, 0, 0, 0.1);
+    outline: none;
+    min-width: 35px;
+    text-align: center;
+    display: block;
+    cursor: pointer;
+}
+
+.page-selector>input[type=submit]:hover {
+    /* background-color: rgb(81, 165, 95); */
+    padding: 0 9px;
+    background-color: blue;
+    color: white;
+}

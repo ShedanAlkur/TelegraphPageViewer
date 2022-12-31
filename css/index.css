@@ -1,0 +1,40 @@
+body {
+    margin: 0;
+    padding: 8px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+
+.header {
+    text-align: center;
+    font-weight: bolder;
+    font-size: larger;
+}
+
+.header>a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+.header>a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 420px) {
+    body {
+        padding: 4px;
+    }
+
+    .search-form {
+        margin: 5px 5px;
+        width: calc(100% - 10px * 2);
+    }
+
+    label.search-form__access_token {
+        display: none;
+    }
+
+}
