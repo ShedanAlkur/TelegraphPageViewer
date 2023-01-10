@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Image navigation on telegraph
 // @namespace    https://github.com/ShedanAlkur/
-// @version      0.1.8
+// @version      0.1.9
 // @downloadURL  https://github.com/ShedanAlkur/TelegraphPageViewer/raw/anime/Telegraph_image_navigation.user.js
 // @updateURL    https://github.com/ShedanAlkur/TelegraphPageViewer/raw/anime/Telegraph_image_navigation.user.js
 // @description  More options for navigating between pictures on telegra.ph
@@ -19,7 +19,7 @@
     const SCROLL_APPLY_TIME = 120;
 
     const backwardLinkStyle =
-        `.backward-link{position:absolute;z-index:2;width:calc(40% + 100px);height:100%;left:-100px;border:none !important}.backward-link:hover{background-color:rgba(0,0,0,.15)}`
+        `.backward-link{position:absolute;z-index:2;width:calc(40% + 100px);height:100%;left:-100px;border:none!important}.backward-link:hover{background:linear-gradient(90deg,rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.15) 85%,rgba(0,0,0,0) 100%)}`;
     const imageCounterStyle =
         `.image-counter{display:inline-block;position:fixed;z-index:999;bottom:0;left:50%;transform:translate(-50%,0);margin-bottom:12px;padding:4px 12px;color:#000;background-color:#fff;font-family:CustomSansSerif,'Lucida Grande',Arial,sans-serif;font-weight:600;font-style:normal;font-size:17px;text-decoration:none;border:2px solid #333;border-radius:16px;text-transform:uppercase;opacity:70%;cursor:default}.image-counter:hover{opacity:30%}.image-counter:empty{display:none}`;
     const addressElement =
@@ -29,7 +29,7 @@
     const buttonTop =
         `.button-top{position:fixed;z-index:9;bottom:0;left:0;margin:12px;opacity:0;visibility:hidden}.button-top.show{opacity:70%;visibility:visible;}`;
     const darkmode =
-        `.darkmode body{background-color:#191919}.darkmode .dropdown-content{background-color:#373737}.darkmode .tl_article .tl_article_content,.darkmode .tl_article .tl_article_content .ql-editor *,.darkmode .tl_article.tl_article_edit.title_focused [data-label]:after,.darkmode .tl_article.tl_article_edit.title_required h1[data-placeholder]:before{color:rgba(255,255,255,.75)}.darkmode .tl_article .tl_article_content,.darkmode .tl_article h1,.darkmode .tl_article h2{color:rgba(255,255,255,.8)}.darkmode .button,.darkmode .tl_article .share_button,.darkmode .tl_article_edit .publish_button,.darkmode .tl_article_editable .edit_button,.darkmode .tl_article_saving .publish_button{color:rgba(255,255,255,.8);background-color:rgba(255,255,255,.2);border-color:rgba(255,255,255,0)}.darkmode .tl_article .tl_article_content code,.darkmode .tl_article .tl_article_content pre{background-color:rgba(255,255,255,.2)}.darkmode .tl_article .tl_article_content blockquote,.darkmode .tl_article a{border-color:rgba(255,255,255,.75)}.darkmode .account,.darkmode .tl_article address,.darkmode .tl_article address a{color:rgba(255,255,255,.5)}.darkmode .address[data-placeholder].empty:after,.darkmode .tl_article.tl_article_edit [data-placeholder].empty:before,.darkmode .tl_article.tl_article_edit figcaption[data-placeholder].empty:after{color:rgba(255,255,255,.44)}.darkmode .editable_input{background-color:#0000}.darkmode img{filter:brightness(80%)}*{transition:background-color .1s linear}`;
+        `.darkmode body{background-color:#191919}.darkmode .dropdown-content{background-color:#373737}.darkmode .tl_alert_message{color:rgba(255,255,255,.75);background-color:#373737}.darkmode .tl_article .tl_article_content,.darkmode .tl_article .tl_article_content .ql-editor *,.darkmode .tl_article.tl_article_edit.title_focused [data-label]:after,.darkmode .tl_article.tl_article_edit.title_required h1[data-placeholder]:before{color:rgba(255,255,255,.75)}.darkmode .tl_article .tl_article_content,.darkmode .tl_article h1,.darkmode .tl_article h2{color:rgba(255,255,255,.8)}.darkmode .button,.darkmode .tl_article .share_button,.darkmode .tl_article_edit .publish_button,.darkmode .tl_article_editable .edit_button,.darkmode .tl_article_saving .publish_button{color:rgba(255,255,255,.8);background-color:rgba(255,255,255,.2);border-color:rgba(255,255,255,0)}.darkmode .tl_article .tl_article_content code,.darkmode .tl_article .tl_article_content pre{background-color:rgba(255,255,255,.2)}.darkmode .tl_article .tl_article_content blockquote,.darkmode .tl_article a{border-color:rgba(255,255,255,.75)}.darkmode .account,.darkmode .tl_article address,.darkmode .tl_article address a{color:rgba(255,255,255,.5)}.darkmode .address[data-placeholder].empty:after,.darkmode .tl_article.tl_article_edit [data-placeholder].empty:before,.darkmode .tl_article.tl_article_edit figcaption[data-placeholder].empty:after{color:rgba(255,255,255,.44)}.darkmode .editable_input{background-color:#0000}.darkmode img{filter:brightness(80%)}*{transition:background-color .1s linear}`;
     var _images;
     var _currentIndex = 0, _imageCount = 0, _scrollIndex = 0;
     var _hCounter;
