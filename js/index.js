@@ -1,28 +1,39 @@
 import * as Telegraph from './telegraphApi.js';
 import { create as createBlock } from './telegraphPageBlock.js';
+import cssClassNames from './class_names.js'
+
 
 const SANDBOX_ACCESS_TOKEN = 'd3b25feccb89e508a9114afb82aa421fe2a9712b963b387cc5ad71e58722';
 
+// html
 const h = document.querySelector('html');
+const hTopButton = document.getElementById('top_button');
 
 // search form
-const hSearchForm = document.getElementById('search_form');
+const hSearchForm = document.getElementById('request_form');
 const hAccessToken = document.getElementById('access_token');
 const hOffset = document.getElementById('offset');
 const hLimit = document.getElementById('limit');
-const hSearchFormSubmit = document.getElementById('search_form_submit');
+const hSearchFormSubmit = document.getElementById('request_form_submit');
+const hAuthUrl = document.getElementById('auth_url');
+
+const hShowSetting = document.getElementById('show_setting');
+const hSettingLabel = document.getElementById('label_show_setting');
+const hSettingBlock = document.getElementById('setting_block');
 
 // page number form
-const hPaginatorDescription = document.getElementById('paginator_description');
-const hPageForm = document.getElementById('page_selector');
+const hTopPaginatorDescription = document.getElementById('paginator_description');
+const hPageForm = document.getElementById('page_form');
 const hPageNumber = document.getElementById('page_number');
 const hPageSelectorSubmit = document.getElementById('page_submit');
 
 // page navigation button
-const hTopToFirstPage = document.getElementById('top_button_first_page');
-const hTopToPrevPage = document.getElementById('top_button_prev_page');
-const hTopToNextPage = document.getElementById('top_button_next_page');
-const hTopToLastPage = document.getElementById('top_button_last_page');
+const hTopPaginator = {
+    toFirstPage: document.getElementById('top_button_first_page'),
+    toPrevPage: document.getElementById('top_button_prev_page'),
+    toNextPage: document.getElementById('top_button_next_page'),
+    toLastPage: document.getElementById('top_button_last_page'),
+}
 
 //
 const hPageList = document.getElementById('page_list');
@@ -34,72 +45,324 @@ var limit = +hLimit.value;
 var total_count = 0;
 var page_number = +hPageNumber.value;
 
-// visual variables
-var darkmode = false;
-var autorun = true;
-var showCompact = false;
-var showCover = true;
-var showDescription = true;
-var hidePassword = false;
+//
+//  Flags
+//
 
-function setVisualClass(element, className, flag, reversed = false){
-    if (flag ^ reversed){
-        element.classList.add(className);
-    } else{
-        element.classList.remove(className);
-    }
+const flagNames = {
+    hidePassword: 'hide_password',
+    showSetting: 'show_setting',
+    darkmode: 'darkmode',
+    autorun: 'autorun',
+    showCompact: 'show_compact',
+    showDescription: 'show_description',
+    showCover: 'show_cover',
 }
 
-function getLocalStorage() {
-    if (localStorage.getItem('darkmode') != null) {
-        darkmode = localStorage.getItem('darkmode') == 'true';
-        document.getElementById('darkmode').checked = darkmode;
-    }
-    if (localStorage.getItem('autorun') != null) {
-        autorun = localStorage.getItem('autorun') == 'true';
-        document.getElementById('autorun').checked = autorun;
-    }
-    if (localStorage.getItem('showCompact') != null) {
-        showCompact = localStorage.getItem('showCompact') == 'true';
-        document.getElementById('showCompact').checked = showCompact;
-    }
-    if (localStorage.getItem('showCover') != null) {
-        showCover = localStorage.getItem('showCover') == 'true';
-        document.getElementById('showCover').checked = showCover;
-    }
-    if (localStorage.getItem('showDescription') != null) {
-        showDescription = localStorage.getItem('showDescription') == 'true';
-        document.getElementById('showDescription').checked = showDescription;
-    }
-    if (localStorage.getItem('hidePassword') != null) {
-        hidePassword = localStorage.getItem('hidePassword') == 'true';
-        document.getElementById('hidePassword').checked = hidePassword;
-    }
-    
-    setVisualClass(h, 'darkmode', darkmode, false);
-    setVisualClass(hPageList, 'page-list_compact', showCompact, false);
-    setVisualClass(hPageList, 'page-list_description_hidden', showDescription, true);
-    setVisualClass(hPageList, 'page-list_cover_hidden', showCover, true);
+var isRequestSubmitByPopState = false;
+
+// flag values
+const flags = new Map([
+    [flagNames.hidePassword, false],
+    [flagNames.showSetting, false],
+    [flagNames.darkmode, false],
+    [flagNames.autorun, false],
+    [flagNames.showCompact, false],
+    [flagNames.showDescription, false],
+    [flagNames.showCover, false],
+]);
+
+// function toggleElementClass(element, className, flag, isReversed = false) {
+//     element.classList.toggle(className, flag ^ isReversed);
+// }
+function toggleElementClass(element, className, flag, isReversed = false) {
+    if (flag ^ isReversed) element.classList.add(className);
+    else element.classList.remove(className);
 }
 
-async function loadPageList(access_token, offset, limit) {
-    const response = await Telegraph.getPageList(
-        access_token ? access_token : SANDBOX_ACCESS_TOKEN,
-        offset,
-        limit);
-    console.log(response);
-    if (response.ok) {
-        total_count = response.result.total_count;
-        hPaginatorDescription.innerText = getPaginatorDescription(offset, limit, total_count);
-        response.result.pages.forEach(page => {
-            hPageList.appendChild(createBlock(page));
-        });
-    } else {
-        if (response.error === 'ACCESS_TOKEN_INVALID') {
-            hAccessToken.setCustomValidity(response.error);
-            hAccessToken.reportValidity();
+const flagDelegates = new Map([
+    [flagNames.darkmode, () => {
+        toggleElementClass(h, cssClassNames.darkmode, flags.get(flagNames.darkmode))
+    }],
+    [flagNames.showSetting, () => {
+        toggleElementClass(hSettingBlock, cssClassNames.disabledSetting, flags.get(flagNames.showSetting), true);
+        toggleElementClass(hSettingLabel, cssClassNames.activeSettingLabel, flags.get(flagNames.showSetting));
+    }],
+    [flagNames.hidePassword, () => {
+        if (flags.get(flagNames.hidePassword)) {
+            hAccessToken.setAttribute('type', 'password');
+            hCheckboxes.get(flagNames.hidePassword).setAttribute('title', 'Hide password');
+        } else {
+            hAccessToken.setAttribute('type', 'text');
+            hCheckboxes.get(flagNames.hidePassword).setAttribute('title', 'Show password');
         }
+    }],
+    // is it okay?
+    [flagNames.autorun, () => { }],
+    [flagNames.showCompact, () => {
+        toggleElementClass(hPageList, cssClassNames.showCompact, flags.get(flagNames.showCompact));
+    }],
+    [flagNames.showDescription, () => {
+        toggleElementClass(hPageList, cssClassNames.showDescription, flags.get(flagNames.showDescription), true);
+    }],
+    [flagNames.showCover, () => {
+        toggleElementClass(hPageList, cssClassNames.showCover, flags.get(flagNames.showCover), true);
+    }],
+]);
+
+// flag checkboxes
+const hCheckboxes = new Map([
+    [flagNames.hidePassword, document.getElementById('hide_password')],
+    [flagNames.showSetting, document.getElementById('show_setting')],
+    [flagNames.darkmode, document.getElementById('darkmode')],
+    [flagNames.autorun, document.getElementById('autorun')],
+    [flagNames.showCompact, document.getElementById('show_compact')],
+    [flagNames.showCover, document.getElementById('show_cover')],
+    [flagNames.showDescription, document.getElementById('show_description')],
+]);
+
+//
+// Variables
+//
+
+const variableNames = {
+    token: 'access_token',
+    offset: 'offset',
+    limit: 'limit',
+    pageNumber: 'page_number',
+    totalCount: 'total_count',
+}
+
+const avaliableQueryNames = [
+    variableNames.token,
+    variableNames.offset,
+    variableNames.limit
+];
+
+// variable Values
+const variables = new Map([
+    [variableNames.token, ''],
+    [variableNames.offset, 0],
+    [variableNames.limit, 0],
+    [variableNames.pageNumber, 0],
+    [variableNames.totalCount, 0],
+]);
+
+const hVariables = new Map([
+    [variableNames.token, document.getElementById('access_token')],
+    [variableNames.offset, document.getElementById('offset')],
+    [variableNames.limit, document.getElementById('limit')],
+    [variableNames.pageNumber, document.getElementById('page_number')],
+]);
+
+
+/** Load all flags and inputs from localStorage, sessionStorage and queryParams */
+function initiateInternalValues() {
+    console.debug('%cinit', 'color: yellow;');
+
+    var value;
+
+    // loading checkboxes from localStorage
+    hCheckboxes.forEach((checkbox, flagName) => {
+        if (value = localStorage.getItem(flagName)) {
+            value = value === 'true';
+            checkbox.checked = value;
+        } else {
+            value = checkbox.checked;
+            localStorage.setItem(flagName, value); // OKAY?
+        }
+        flags.set(flagName, value);
+        flagDelegates.get(flagName)();
+    });
+    console.debug('flags:');
+    console.debug(flags);
+
+    // loading variables from sessionStorage and queryParams
+    var page_number, workaroundFlag = false;
+    const urlParams = new URLSearchParams(window.location.search);
+    hVariables.forEach((input, variableName) => {
+        do {
+            // get from sessionStorage
+            if ((value = sessionStorage.getItem(variableName)) != null) break;
+            // else get from queryParams
+            if ((value = urlParams.get(variableName)) != null
+                && avaliableQueryNames.includes(variableName)) break;
+            // else get from current html element value
+            if (variableName === variableNames.pageNumber) { // Workaround for page_number variable
+                value = getPageNumber(
+                    variables.get(variableNames.offset),
+                    variables.get(variableNames.limit));
+                page_number = value;
+                workaroundFlag = true;
+                break;
+            }
+            value = input.value;
+        } while (false)
+        if (variableName === variableNames.pageNumber && workaroundFlag) { // Workaround for page_number variable
+            value = page_number;
+            console.log(`page_number ${value}`);
+        }
+        if (input.type === 'number') value = +value;
+        input.value = value;
+        variables.set(variableName, value);
+        sessionStorage.setItem(variableName, value); // OKAY?
+    });
+    console.debug('variables:');
+    console.debug(variables);
+
+}
+
+//
+// Work with History Api
+//
+
+function getHistoryStateObject() {
+    var state = {};
+    variables.forEach((value, variableName) => {
+        state[variableName] = value;
+    });
+    return state;
+}
+
+function pushState() {
+    console.debug('pushState');
+    if (history.state.access_token == variables.get(variableNames.access_token) &&
+        history.state.offset == variables.get(variableNames.offset) &&
+        history.state.limit == variables.get(variableNames.limit)) return;
+    history.pushState(getHistoryStateObject(), '', '');
+}
+
+addEventListener('popstate', (event) => {
+    console.debug('%cpopstate', 'color: yellow;');
+    var value;
+    variables.forEach((_, variableName) => {
+        if ((value = history.state[variableName]) != null) {
+            var input;
+            if (input = hVariables.get(variableName)) {
+                if (input.type !== 'text' && input.type !== 'password') value = +value;
+                input.value = value;
+                variables.set(variableName, value);
+            } else {
+                value = +value;
+                variables.set(variableName, value);
+            }
+        }
+    });
+    hAccessToken.setCustomValidity('');
+    isRequestSubmitByPopState = true;
+    if (flags.get(flagNames.autorun)) hSearchForm.requestSubmit();
+});
+
+//
+// Handlers
+//
+
+function handler_onChange_checkbox(event) {
+    flags.set(event.target.name, event.target.checked);
+    localStorage.setItem(event.target.name, event.target.checked);
+    flagDelegates.get(event.target.name)();
+}
+
+function handler_onInput_input(event) {
+    const value = event.target.type === 'number' ? +event.target.value : event.target.value;
+    variables.set(event.target.name, value);
+    sessionStorage.setItem(event.target.name, event.target.value);
+}
+
+function handler_onClick_paginatorButton(event) {
+    event.preventDefault();
+    var page_number;
+    const total_count = variables.get(variableNames.totalCount);
+    const limit = variables.get(variableNames.limit);
+    switch (event.target.dataset.destination) {
+        case 'first': page_number = 1; break;
+        case 'prev': page_number = (+hPageNumber.value - 1); break;
+        case 'next': page_number = (+hPageNumber.value + 1); break;
+        case 'last':
+            page_number = Math.floor(total_count / limit);
+            page_number += ((total_count % limit == 0) ? 0 : 1);
+            page_number = Math.max(page_number, 1);
+            break;
+        default:
+            return;
     }
+    sessionStorage.setItem(variableNames.pageNumber, page_number);
+    variables.set(variableNames.pageNumber, page_number);
+    hPageNumber.value = page_number;
+    hPageForm.requestSubmit();
+}
+
+window.addEventListener('scroll', (event) => {
+    console.log('scroll');
+    toggleElementClass(hTopButton, cssClassNames.hiddenTopButton, window.scrollY > 250, true)
+})
+
+hTopButton.addEventListener('click', (event) => {
+    event.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+//
+// Submits
+//
+
+hSearchForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const doPushState = !isRequestSubmitByPopState;
+    isRequestSubmitByPopState = false;
+    console.debug('%chSearchForm loading!', 'color: yellow;');
+
+    const pageNumber = getPageNumber(
+        variables.get(variableNames.offset),
+        variables.get(variableNames.limit)
+    );
+    hPageNumber.value = pageNumber;
+    variables.set(variableNames.pageNumber, pageNumber);
+    sessionStorage.setItem(variableNames.pageNumber, pageNumber);
+    updatePageButtonStatus(pageNumber);
+
+    hPageList.innerHTML = '';
+    loadPageList(
+        variables.get(variableNames.token),
+        variables.get(variableNames.offset),
+        variables.get(variableNames.limit)
+    );
+    if (doPushState) pushState();
+    console.debug('%chSearchForm loaded!', 'color: green;');
+})
+
+hPageForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    console.debug('%chPageForm loading!', 'color: yellow;');
+
+    if (!hLimit.reportValidity()) return;
+
+    const offset = getOffset(
+        variables.get(variableNames.limit),
+        variables.get(variableNames.pageNumber));
+    hOffset.value = offset;
+    variables.set(variableNames.offset, offset);
+    sessionStorage.setItem(variableNames.offset, offset);
+
+    // document.getElementById('offset').validity.valid;
+    hSearchForm.requestSubmit();
+
+    // updatePageButtons(variables.get(variableNames.pageNumber));
+
+    // pushState();
+    console.debug('%chPageForm loaded!', 'color: green;');
+});
+
+//
+// Utils
+//
+
+function getOffset(limit, page_number) {
+    return (page_number - 1) * limit;
+}
+
+function getPageNumber(offset, limit) {
+    return page_number = Math.floor(offset / limit) + 1;
 }
 
 /** Creating string that represents showing page interval */
@@ -114,280 +377,114 @@ function getPaginatorDescription(offset, limit, total_count) {
     return result;
 }
 
-/** Calculating offset by current page group number */
-function getOffset(limit, page_number) {
-    return (page_number - 1) * limit;
-}
-
-function getPageNumber(offset, limit) {
-    return page_number = Math.floor(offset / limit) + 1;
-}
-
-function setSessionStorage() {
-    console.debug('setSessionStorage');
-    sessionStorage.setItem('access_token', access_token);
-    sessionStorage.setItem('offset', offset);
-    sessionStorage.setItem('limit', limit);
-    sessionStorage.setItem('total_count', total_count);
-    sessionStorage.setItem('page_number', page_number);
-}
-
-function getSessionStorage() {
-    console.debug('getSessionStorage');
-    console.debug(sessionStorage);
-    if (sessionStorage.getItem('access_token') != null) access_token = sessionStorage.getItem('access_token');
-    if (sessionStorage.getItem('offset') != null) offset = +sessionStorage.getItem('offset');
-    if (sessionStorage.getItem('limit') != null) limit = +sessionStorage.getItem('limit');
-    if (sessionStorage.getItem('total_count') != null) total_count = +sessionStorage.getItem('total_count');
-    if (sessionStorage.getItem('page_number') != null) page_number = +sessionStorage.getItem('page_number');
-}
-
-/** Set internal variables to html values */
-function setHtmlValues() {
-    console.debug('setHtmlValues');
-    if (access_token != null) hAccessToken.value = access_token;
-    if (offset != null) hOffset.value = offset;
-    if (limit != null) hLimit.value = limit;
-    if (page_number != null) hPageNumber.value = page_number;
-}
-
-/** Get html values to internal variables */
-function getHtmlValues() {
-    console.debug('getHtmlValues');
-    access_token = hAccessToken.value;
-    offset = hOffset.value;
-    limit = hLimit.value;
-    page_number = hPageNumber.value;
-}
-
-/** Push all variables with History Api */
-function pushState() {
-    console.debug('pushState');
-    if (history.state.access_token == access_token &&
-        history.state.offset == offset &&
-        history.state.limit == limit) return;
-    history.pushState(
-        {
-            access_token: hAccessToken.value,
-            offset: hOffset.value,
-            limit: hLimit.value,
-            total_count,
-            page_number: hPageNumber.value
-        },
-        '', ''
-    );
-}
-
-/** Pop all variables with History Api */
-function popState() {
-    console.debug('popstate');
-    if (history.state == null) {
-        location.reload();
-        return;
+async function loadPageList(access_token, offset, limit) {
+    const response = await Telegraph.getPageList(
+        access_token ? access_token : SANDBOX_ACCESS_TOKEN,
+        offset,
+        limit);
+    console.debug(response);
+    if (response.ok) {
+        const total_count = response.result.total_count;
+        variables.set(variableNames.totalCount, total_count);
+        hTopPaginatorDescription.innerText = getPaginatorDescription(offset, limit, total_count);
+        updatePageButtonHref(variables.get(variableNames.pageNumber));
+        response.result.pages.forEach(page => {
+            hPageList.appendChild(createBlock(page));
+        });
+    } else {
+        if (response.error === 'ACCESS_TOKEN_INVALID') {
+            hAccessToken.setCustomValidity(response.error);
+            hAccessToken.reportValidity();
+        }
     }
-
-    access_token = history.state.access_token ?? access_token;
-    hAccessToken.setCustomValidity('');
-    offset = history.state.offset ?? offset;
-    limit = history.state.limit ?? limit;
-    total_count = history.state.total_count ?? total_count;
-    page_number = history.state.page_number ?? page_number;
 }
 
-addEventListener('popstate', (event) => {
-    popState()
-    setHtmlValues();
-    updatePageButtonState();
-    if (autorun) hSearchForm.requestSubmit();
+function updatePageButtonStatus(page_number) {
+    if (page_number <= 1) {
+        hTopPaginator.toFirstPage.classList.add(cssClassNames.disabledPaginatorButton);
+        hTopPaginator.toPrevPage.classList.add(cssClassNames.disabledPaginatorButton);
+    } else {
+        hTopPaginator.toFirstPage.classList.remove(cssClassNames.disabledPaginatorButton);
+        hTopPaginator.toPrevPage.classList.remove(cssClassNames.disabledPaginatorButton);
+    }
+}
+
+function updatePageButtonHref(page_number) {
+    console.log('Ахтунг!');
+    const access_token = variables.get(variableNames.token);
+    const limit = variables.get(variableNames.limit);
+    const total_count = variables.get(variableNames.totalCount);
+
+    const params = new URLSearchParams();
+    if (access_token) params.set(variableNames.token, access_token);
+    params.set(variableNames.limit, limit);
+
+    // to first page
+    params.set(variableNames.offset, 0);
+    hTopPaginator.toFirstPage.href = '?' + params.toString();
+    // to previous page
+    params.set(variableNames.offset, getOffset(limit, page_number - 1));
+    hTopPaginator.toPrevPage.href = '?' + params.toString();
+    // to next page
+    params.set(variableNames.offset, getOffset(limit, page_number + 1));
+    hTopPaginator.toNextPage.href = '?' + params.toString();
+    console.log(`offset ${getOffset(limit, page_number + 1)} limit ${limit} page_number ${page_number}`);
+    // to last page
+    page_number = Math.floor(total_count / limit);
+    page_number += ((total_count % limit == 0) ? 0 : 1);
+    page_number = Math.max(page_number, 1);
+    params.set(variableNames.offset, getOffset(limit, page_number));
+    hTopPaginator.toLastPage.href = '?' + params.toString();
+}
+
+document.getElementById('access_token_auth').addEventListener('click', async (event) => {
+    const access_token = variables.get(variableNames.token);
+    const response = await Telegraph.getAuthUrl(access_token ? access_token : SANDBOX_ACCESS_TOKEN);
+    hAuthUrl.innerText = '';
+    console.log(response);
+    if (response.ok) {
+        const total_count = response.result.total_count;
+        variables.set(variableNames.totalCount, total_count);
+        const short_name = response.result.short_name;
+        const author_name = response.result.author_name;
+        const auth_url = response.result.auth_url;
+        var text = '';
+        if (short_name) text += ` "${short_name}" `;
+        if (author_name) text += ` - "${author_name}" `;
+        text += ` auth url`;
+        hAuthUrl.innerText = text;
+        hAuthUrl.href = auth_url;
+    } else {
+        if (response.error === 'ACCESS_TOKEN_INVALID') {
+            hAccessToken.setCustomValidity(response.error);
+            hAccessToken.reportValidity();
+        }
+    }
 });
 
 addEventListener('DOMContentLoaded', (event) => {
-    console.debug('DOMContentLoaded');
+    console.debug('%cDOMContentLoaded', 'color: yellow;');
+    initiateInternalValues();
 
-    // 
-    //  Initializating internal variables
-    //
+    if (history.state == null) history.replaceState(getHistoryStateObject(), '', '');
 
-    getLocalStorage();
-    getSessionStorage();
-    setHtmlValues();
-    updatePageButtonState(page_number);
-    if (history.state == null) {
-        history.replaceState(
-            {
-                access_token: hAccessToken.value,
-                offset: hOffset.value,
-                limit: hLimit.value,
-                total_count,
-                page_number: hPageNumber.value
-            },
-            '', ''
-        );
-    }
-
-    //
-    // Setting form event
-    //
-
-    document.getElementById('darkmode').addEventListener('change', (event) => {
-        localStorage.setItem(event.target.name, event.target.checked);
-        darkmode = event.target.checked;
-        setVisualClass(h, 'darkmode', darkmode, false);
+    // checkbox inChange handlers
+    hCheckboxes.forEach((checkbox, flagName) => {
+        checkbox.addEventListener('change', handler_onChange_checkbox);
     });
-
-    document.getElementById('autorun').addEventListener('change', (event) => {
-        localStorage.setItem(event.target.name, event.target.checked);
-        autorun = event.target.checked;
+    // variable onInput handlers
+    hVariables.forEach((input, variableName) => {
+        input.addEventListener('input', handler_onInput_input);
     });
+    hAccessToken.addEventListener('input', () => { hAccessToken.setCustomValidity(''); });
 
-    document.getElementById('showCompact').addEventListener('change', (event) => {
-        localStorage.setItem(event.target.name, event.target.checked);
-        showCompact = event.target.checked;
-        setVisualClass(hPageList, 'page-list_compact', showCompact, false);
-    });
+    updatePageButtonStatus(variables.get(variableNames.pageNumber));
+    updatePageButtonHref(variables.get(variableNames.pageNumber));
+    hTopPaginator.toFirstPage.addEventListener('click', handler_onClick_paginatorButton);
+    hTopPaginator.toPrevPage.addEventListener('click', handler_onClick_paginatorButton);
+    hTopPaginator.toNextPage.addEventListener('click', handler_onClick_paginatorButton);
+    hTopPaginator.toLastPage.addEventListener('click', handler_onClick_paginatorButton);
 
-    document.getElementById('showDescription').addEventListener('change', (event) => {
-        localStorage.setItem(event.target.name, event.target.checked);
-        showDescription = event.target.checked;
-        setVisualClass(hPageList, 'page-list_description_hidden', showDescription, true);
-    });
 
-    document.getElementById('showCover').addEventListener('change', (event) => {
-        localStorage.setItem(event.target.name, event.target.checked);
-        showCover = event.target.checked;
-        setVisualClass(hPageList, 'page-list_cover_hidden', showCover, true);
-    });
-
-    //
-    // Search form events
-    //
-
-    const accessTokenCheckbox = document.getElementById('access_token_checkbox');
-    accessTokenCheckbox.addEventListener('change', (event) => {
-        if (event.target.checked) {
-            hAccessToken.setAttribute('type', 'password');
-            event.target.setAttribute('title', 'Show password');
-        }
-        else {
-            hAccessToken.setAttribute('type', 'text');
-            event.target.setAttribute('title', 'Hide password');
-        }
-    });
-
-    hSearchForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        console.debug('%chSearchForm loading!', 'color: yellow;');
-
-        hPageNumber.value = getPageNumber(offset, limit);
-
-        hPageList.innerHTML = '';
-        loadPageList(access_token, offset, limit);
-        pushState();
-        console.debug('%chSearchForm loaded!', 'color: green;');
-    })
-
-    document.getElementById('access_token_apply').addEventListener('click', async (event) => {
-        const response = await Telegraph.getAccountInfo(access_token ? access_token : SANDBOX_ACCESS_TOKEN);
-        console.log(response);
-        if (response.ok) {
-            total_count = response.result.total_count;
-        } else {
-            if (response.error === 'ACCESS_TOKEN_INVALID') {
-                hAccessToken.setCustomValidity(response.error);
-                hAccessToken.reportValidity();
-            }
-        }
-    });
-
-    // on search form input
-    hAccessToken.addEventListener('input', () => {
-        access_token = hAccessToken.value;
-        sessionStorage.setItem('access_token', access_token);
-        hAccessToken.setCustomValidity('');
-    });
-    hOffset.addEventListener('input', () => {
-        offset = +hOffset.value;
-        sessionStorage.setItem('offset', offset);
-    });
-    hLimit.addEventListener('input', () => {
-        limit = +hLimit.value;
-        sessionStorage.setItem('limit', limit);
-    });
-
-    //
-    // Page selector events
-    //
-
-    function updatePageButtonState(page_number) {
-        if (page_number <= 1) {
-            hTopToFirstPage.classList.add('menu-button_disabled');
-            hTopToPrevPage.classList.add('menu-button_disabled');
-        } else {
-            hTopToFirstPage.classList.remove('menu-button_disabled');
-            hTopToPrevPage.classList.remove('menu-button_disabled');
-        }
-    }
-
-    hPageForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        console.debug('%chPageForm loading!', 'color: yellow;');
-
-        if (!hLimit.reportValidity()) return;
-
-        offset = getOffset(limit, page_number)
-        sessionStorage.setItem('offset', offset);
-        hOffset.value = offset;
-
-        // document.getElementById('offset').validity.valid;
-        hSearchForm.requestSubmit();
-
-        updatePageButtonState(page_number);
-
-        // pushState();
-        console.debug('%chPageForm loaded!', 'color: green;');
-    })
-
-    // on page form input
-    hPageNumber.addEventListener('input', () => {
-        page_number = +hPageNumber.value;
-        sessionStorage.setItem('page_number', page_number);
-    });
-
-    //
-    // page navigation buttons
-    //
-
-    hTopToFirstPage.addEventListener('click', (event) => {
-        event.preventDefault();
-        page_number = 1;
-        sessionStorage.setItem('page_number', page_number);
-        hPageNumber.value = page_number;
-        hPageForm.requestSubmit();
-    })
-
-    hTopToPrevPage.addEventListener('click', (event) => {
-        event.preventDefault();
-        page_number = (+hPageNumber.value - 1);
-        sessionStorage.setItem('page_number', page_number);
-        hPageNumber.value = page_number;
-        hPageForm.requestSubmit();
-    })
-
-    hTopToNextPage.addEventListener('click', (event) => {
-        event.preventDefault();
-        page_number = (+hPageNumber.value + 1)
-        sessionStorage.setItem('page_number', page_number);
-        hPageNumber.value = page_number;
-        hPageForm.requestSubmit();
-    })
-
-    hTopToLastPage.addEventListener('click', (event) => {
-        event.preventDefault();
-        page_number = (Math.floor(total_count / limit) + ((total_count % limit == 0) ? 0 : 1));
-        sessionStorage.setItem('page_number', page_number);
-        hPageNumber.value = page_number;
-        hPageForm.requestSubmit();
-    })
-
-    if (autorun) hSearchForm.requestSubmit();
+    if (flags.get(flagNames.autorun)) hSearchForm.requestSubmit();
 });

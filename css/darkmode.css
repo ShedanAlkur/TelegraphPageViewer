@@ -1,27 +1,36 @@
+.darkmode .auth-url:link {
+    color: lightskyblue;
+}
+
+.darkmode .auth-url:visited {
+    color: #aa76db;
+}
+
+.darkmode .auth-url:hover {
+    color: #ffffff;
+}
+
+.darkmode .auth-url:active {
+    color: #ff4040;
+}
+
 .darkmode body {
-    --color-main: white;
-    --color-block: rgba(255, 255, 255, 0.3);
-    --color-disabled: rgba(255, 255, 255, 0.685);
-    background-color: black;
+    --color-main: rgba(255, 255, 255, .75);
+    --color-background: #191919;
+    --color-input-background: #575757;
+    --color-block: #373737;
+    --color-disabled: rgba(255, 255, 255, 0.6);
+}
+
+.darkmode .button-top,
+.darkmode .page-block,
+.darkmode .request-form {
+    border-color: #0000;
 }
 
 .darkmode .request-form {
-    border: none;
-    background-color: var(--color-block);
     box-shadow: none;
 }
-
-.darkmode .page-block {
-    border-color: #0000;
-    background-color: var(--color-block);
-}
-
-.darkmode input{
-    background-color: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.5);
-    color: inherit;
-}
-
 
 .darkmode .paginator menu>a:hover {
     background-color: rgba(255, 255, 255, 0.4);

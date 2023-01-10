@@ -6,4 +6,5 @@
     disabledPaginatorButton: 'paginator__button_disabled',
     disabledSetting: 'setting_disabled',
     activeSettingLabel: 'label-show-setting_active',
+    hiddenTopButton: 'button-top_hidden',
 }
