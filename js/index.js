@@ -36,6 +36,7 @@ const hTopPaginator = {
 }
 
 //
+const hLoader = document.getElementById('loader');
 const hPageList = document.getElementById('page_list');
 
 // form field value variables
@@ -337,9 +338,9 @@ hPageForm.addEventListener('submit', (event) => {
 
     if (!hLimit.reportValidity()) return;
 
-    const offset = getOffset(
-        variables.get(variableNames.limit),
-        variables.get(variableNames.pageNumber));
+    const limit = variables.get(variableNames.limit);
+    const page_number = variables.get(variableNames.pageNumber);
+    const offset = getOffset(limit, page_number);
     hOffset.value = offset;
     variables.set(variableNames.offset, offset);
     sessionStorage.setItem(variableNames.offset, offset);
@@ -378,6 +379,7 @@ function getPaginatorDescription(offset, limit, total_count) {
 }
 
 async function loadPageList(access_token, offset, limit) {
+    hLoader.classList.remove(cssClassNames.disabledLoader);
     const response = await Telegraph.getPageList(
         access_token ? access_token : SANDBOX_ACCESS_TOKEN,
         offset,
@@ -397,6 +399,7 @@ async function loadPageList(access_token, offset, limit) {
             hAccessToken.reportValidity();
         }
     }
+    hLoader.classList.add(cssClassNames.disabledLoader);
 }
 
 function updatePageButtonStatus(page_number) {
@@ -410,7 +413,7 @@ function updatePageButtonStatus(page_number) {
 }
 
 function updatePageButtonHref(page_number) {
-    console.log('Ахтунг!');
+    // console.log('Ахтунг!');
     const access_token = variables.get(variableNames.token);
     const limit = variables.get(variableNames.limit);
     const total_count = variables.get(variableNames.totalCount);
@@ -438,6 +441,7 @@ function updatePageButtonHref(page_number) {
 }
 
 document.getElementById('access_token_auth').addEventListener('click', async (event) => {
+    hLoader.classList.remove(cssClassNames.disabledLoader);
     const access_token = variables.get(variableNames.token);
     const response = await Telegraph.getAuthUrl(access_token ? access_token : SANDBOX_ACCESS_TOKEN);
     hAuthUrl.innerText = '';
@@ -460,6 +464,7 @@ document.getElementById('access_token_auth').addEventListener('click', async (ev
             hAccessToken.reportValidity();
         }
     }
+    hLoader.classList.add(cssClassNames.disabledLoader);
 });
 
 addEventListener('DOMContentLoaded', (event) => {

@@ -8,10 +8,10 @@
     <link rel="shortcut icon" href="https://telegra.ph/favicon.ico?1" type="image/x-icon">
     <title>Telegraph page viewer</title>
     <link rel="stylesheet" href="css/index.css">
-    <link rel="stylesheet" href="css/forms.css">
     <link rel="stylesheet" href="css/page_list.css">
-    <link rel="stylesheet" href="css/darkmode.css">
     <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/loading.css">
+    <link rel="stylesheet" href="css/darkmode.css">
 </head>
 
 <body>
@@ -31,7 +31,7 @@
                     <input type="checkbox" id="hide_password" name="hide_password" title="Hide password">
                     <input type="button" id="access_token_auth" value="Auth">
                 </div>
-                    <a class="auth-url" href="" id="auth_url"></a>
+                <a class="auth-url" href="" id="auth_url"></a>
                 <!-- offset, limit, fetch -->
                 <div class="request-form__row">
                     <label class="request-form__offset" for="offset"> offset: </label>
@@ -78,20 +78,24 @@
             <div class="paginator" id="">
                 <small id="paginator_description">Showing 0 of 0</small>
                 <menu>
-                    <a class="paginator__button" id="top_button_first_page" data-destination="first"
-                        href="#">&lt;&lt;</a>
-                    <a class="paginator__button" id="top_button_prev_page" data-destination="prev" href="#">&lt;</a>
+                    <a class="paginator__button" id="top_button_first_page" data-destination="first" href="#"
+                        title="Go to the first page">&lt;&lt;</a>
+                    <a class="paginator__button" id="top_button_prev_page" data-destination="prev" href="#"
+                        title="Go to the previous  page">&lt;</a>
                     <span class="page-selector-wrapper">
                         <form class="page-form" id="page_form">
-                            <input type="number" id="page_number" value="1" min="1" required>
+                            <input type="number" name="page_number" id="page_number" value="1" min="1" required>
                             <input type="submit" id="page_submit" value="S">
                         </form>
                     </span>
-                    <a class="paginator__button" id="top_button_next_page" data-destination="next" href="#">&gt;</a>
-                    <a class="paginator__button" id="top_button_last_page" data-destination="last" href="#">&gt;&gt;</a>
+                    <a class="paginator__button" id="top_button_next_page" data-destination="next" href="#"
+                        title="Go to the next page">&gt;</a>
+                    <a class="paginator__button" id="top_button_last_page" data-destination="last" href="#"
+                        title="Go to the last page">&gt;&gt;</a>
                 </menu>
             </div>
             <hr>
+            <div class="loader loader_disabled" id="loader"></div>
             <div class="page-list" id="page_list">
 
             </div>

@@ -7,4 +7,5 @@
     disabledSetting: 'setting_disabled',
     activeSettingLabel: 'label-show-setting_active',
     hiddenTopButton: 'button-top_hidden',
+    disabledLoader: 'loader_disabled',
 }

@@ -1,9 +1,6 @@
 :root {
     --form-width: 350px;
     --form-min-width: 282px;
-    --color-main: rgb(255, 255, 255);
-    --secondary-color: rgb(255, 255, 255);
-    --third-color: rgb(255, 255, 255);
     --setting-transition-time: 0.2s;
 }
 

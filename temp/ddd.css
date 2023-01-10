@@ -1,0 +1,69 @@
+.darkmode body {
+	background-color: #191919
+}
+
+.darkmode .dropdown-content {
+	background-color: #373737
+}
+
+.darkmode .tl_alert_message {
+	color: rgba(255, 255, 255, .75);
+	background-color: #373737
+}
+
+.darkmode .tl_article .tl_article_content,
+.darkmode .tl_article .tl_article_content .ql-editor *,
+.darkmode .tl_article.tl_article_edit.title_focused [data-label]:after,
+.darkmode .tl_article.tl_article_edit.title_required h1[data-placeholder]:before {
+	color: rgba(255, 255, 255, .75)
+}
+
+.darkmode .tl_article .tl_article_content,
+.darkmode .tl_article h1,
+.darkmode .tl_article h2 {
+	color: rgba(255, 255, 255, .8)
+}
+
+.darkmode .button,
+.darkmode .tl_article .share_button,
+.darkmode .tl_article_edit .publish_button,
+.darkmode .tl_article_editable .edit_button,
+.darkmode .tl_article_saving .publish_button {
+	color: rgba(255, 255, 255, .8);
+	background-color: rgba(255, 255, 255, .2);
+	border-color: rgba(255, 255, 255, 0)
+}
+
+.darkmode .tl_article .tl_article_content code,
+.darkmode .tl_article .tl_article_content pre {
+	background-color: rgba(255, 255, 255, .2)
+}
+
+.darkmode .tl_article .tl_article_content blockquote,
+.darkmode .tl_article a {
+	border-color: rgba(255, 255, 255, .75)
+}
+
+.darkmode .account,
+.darkmode .tl_article address,
+.darkmode .tl_article address a {
+	color: rgba(255, 255, 255, .5)
+}
+
+.darkmode .address[data-placeholder].empty:after,
+.darkmode .tl_article.tl_article_edit [data-placeholder].empty:before,
+.darkmode .tl_article.tl_article_edit figcaption[data-placeholder].empty:after {
+	color: rgba(255, 255, 255, .44)
+}
+
+.darkmode .editable_input {
+	background-color: #0000
+}
+
+.darkmode img {
+	filter: brightness(80%)
+}
+
+* {
+	transition: background-color .1s linear
+}

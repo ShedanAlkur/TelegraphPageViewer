@@ -1,0 +1,25 @@
+.loader {
+    --size: 70px;
+    margin: 0 auto;
+    border: calc(0.13 * var(--size)) solid var(--color-block);
+    border-top-color: var(--color-disabled);
+    border-radius: 50%;
+    width: var(--size);
+    height: var(--size);
+    animation: spin 2s linear infinite;
+    box-shadow: inset 0px 0px 10px 1px rgba(0, 0, 0, 0.2), 0px 0px 10px 1px rgba(0, 0, 0, 0.2);;
+}
+
+.loader_disabled{
+    display: none;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
