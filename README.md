@@ -15,7 +15,8 @@ Limits the number of pages to be retrieved.
 
 ## Telegraph page viewer v2
 
-**Outdated version with many problems and bugs**
+**Outdated version with many problems and bugs** 
+
 **[Open](https://shedanalkur.github.io/TelegraphPageViewer/v2/?run "Page")** page of viewer
 
 Supported query url parameters:
