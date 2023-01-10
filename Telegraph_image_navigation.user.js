@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Image navigation on telegraph
 // @namespace    https://github.com/ShedanAlkur/
-// @version      0.1.9
+// @version      0.1.10
 // @downloadURL  https://github.com/ShedanAlkur/TelegraphPageViewer/raw/main/Telegraph_image_navigation.user.js
 // @updateURL    https://github.com/ShedanAlkur/TelegraphPageViewer/raw/main/Telegraph_image_navigation.user.js
 // @description  More options for navigating between pictures on telegra.ph
