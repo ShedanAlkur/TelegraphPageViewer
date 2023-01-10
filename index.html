@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/index.css">
     <link rel="stylesheet" href="css/forms.css">
     <link rel="stylesheet" href="css/page_list.css">
+    <link rel="stylesheet" href="css/darkmode.css">
     <link rel="stylesheet" href="css/footer.css">
 </head>
 
@@ -18,64 +19,76 @@
     <div class="content">
         <header class="header"><a href=" ">Telegraph page viewer v3</a></header>
         <main>
-            <form class="search-form" name="search_form" id="search_form" action="" autocomplete="off"
+            <form class="request-form" id="request_form" name="request_form" action="" autocomplete="off"
                 accept-charset="UTF-8">
-                <div class="search-form__row">
-                    <label class="search-form__access_token" for="access_token"> access_token: </label>
-                    <input class="search-form__access_token" type="text" name="access_token" id="access_token"
+                <!-- access token -->
+                <div class="request-form__row">
+                    <label class="request-form__access_token" for="access_token"> access_token: </label>
+                    <input class="request-form__access_token" type="text" name="access_token" id="access_token"
                         placeholder="d3b25feccb89e508a9114afb82aa421fe2a9712b963b387cc5ad71e58722"
                         autocomplete="new-password"
                         title="Access token of the Telegraph account.&#10;The Sandbox access token is used by default.">
-                    <input type="checkbox" id="access_token_checkbox" title="Hide password">
-                    <input type="button" id="access_token_apply" value="Apply">
+                    <input type="checkbox" id="hide_password" name="hide_password" title="Hide password">
+                    <input type="button" id="access_token_auth" value="Auth">
                 </div>
-                <div class="search-form__row">
-                    <label class="search-form__offset" for="offset"> offset: </label>
-                    <input class="search-form__offset" type="number" name="offset" id="offset" placeholder="0" min="0"
+                    <a class="auth-url" href="" id="auth_url"></a>
+                <!-- offset, limit, fetch -->
+                <div class="request-form__row">
+                    <label class="request-form__offset" for="offset"> offset: </label>
+                    <input class="request-form__offset" type="number" name="offset" id="offset" placeholder="0" min="0"
                         value="0" required
                         title="Sequential number of the first page to be returned.&#10;(default = 0)">
-                    <label class="search-form__limit" for="limit"> limit: </label>
-                    <input class="search-form__limit" type="number" name="limit" id="limit" placeholder="1-200"
+                    <label class="request-form__limit" for="limit"> limit: </label>
+                    <input class="request-form__limit" type="number" name="limit" id="limit" placeholder="1-200"
                         value="50" min="0" max="200" required
                         title="Limits the number of pages to be retrieved.&#10;(1-200, default = 50)">
-                    <input type="submit" id="search_form_submit" value="Fetch">
+                    <input type="submit" id="request_form_submit" value="Fetch">
+                </div>
+
+                <div class="request-form__row">
+                    <label class="label-show-setting" for="show_setting" id="label_show_setting">Visual settings</label>
+                    <input type="checkbox" id="show_setting" name="show_setting" hidden>
+                </div>
+                <!-- settings -->
+                <div class="request-form__row setting setting_disabled" id="setting_block">
+                    <div class="setting__row">
+                        <input type="checkbox" name="darkmode" id="darkmode">
+                        <label for="darkmode">Dark mode </label>
+                    </div>
+                    <div class="setting__row">
+                        <input type="checkbox" name="autorun" id="autorun">
+                        <label for="autorun">Autorun </label>
+                    </div>
+                    <div class="setting__row">
+                        <input type="checkbox" name="show_compact" id="show_compact">
+                        <label for="show_compact">Compact mode </label>
+                    </div>
+                    <div class="setting__row">
+                        <input type="checkbox" name="show_description" id="show_description" checked>
+                        <label for="show_description">Show description </label>
+                    </div>
+                    <div class="setting__row">
+                        <input type="checkbox" name="show_cover" id="show_cover" checked>
+                        <label for="show_cover">Show cover </label>
+                    </div>
                 </div>
             </form>
 
-            <div class="setting-form">
-                <div class="setting__row">
-                    <label class="setting__row" for="darkmode">Dark mode: </label><input type="checkbox" name="darkmode" id="darkmode">
-                </div>
-                <div class="setting__row">
-                    <label class="setting__row" for="autorun">Autorun: </label><input type="checkbox" name="autorun"  id="autorun" checked>
-                </div>
-                <div class="setting__row">
-                    <label class="setting__row" for="showCompact">Compact mode: </label><input type="checkbox" name="showCompact" 
-                        id="showCompact">
-                </div>
-                <div class="setting__row">
-                    <label class="setting__row" for="showDescription">Show description: </label><input type="checkbox" name="showDescription" 
-                        id="showDescription" checked>
-                </div>
-                <div class="setting__row">
-                    <label class="setting__row" for="showCover">Show cover: </label><input type="checkbox" name="showCover" 
-                        id="showCover" checked>
-                </div>
-            </div>
 
             <div class="paginator" id="">
                 <small id="paginator_description">Showing 0 of 0</small>
                 <menu>
-                    <a class="paginator__button" id="top_button_first_page" href="#">&lt;&lt;</a>
-                    <a class="paginator__button" id="top_button_prev_page" href="#">&lt;</a>
+                    <a class="paginator__button" id="top_button_first_page" data-destination="first"
+                        href="#">&lt;&lt;</a>
+                    <a class="paginator__button" id="top_button_prev_page" data-destination="prev" href="#">&lt;</a>
                     <span class="page-selector-wrapper">
-                        <form class="page-selector" id="page_selector">
+                        <form class="page-form" id="page_form">
                             <input type="number" id="page_number" value="1" min="1" required>
                             <input type="submit" id="page_submit" value="S">
                         </form>
                     </span>
-                    <a class="paginator__button" id="top_button_next_page" href="#">&gt;</a>
-                    <a class="paginator__button" id="top_button_last_page" href="#">&gt;&gt;</a>
+                    <a class="paginator__button" id="top_button_next_page" data-destination="next" href="#">&gt;</a>
+                    <a class="paginator__button" id="top_button_last_page" data-destination="last" href="#">&gt;&gt;</a>
                 </menu>
             </div>
             <hr>
@@ -88,13 +101,12 @@
             <ul>
                 <li><a href="https://github.com/shedanAlkur/telegraphPageViewer/">[Source code]</a></li>
                 <li><a href=" " title="More options for navigating between pictures on telegra.ph">[Extension]</a></li>
-                <li><a href=" " title="Old version">[Version 2]</a></li>
+                <li><a href="/v2" title="Old version">[Version 2]</a></li>
             </ul>
         </footer>
     </div>
 
-    <script type="module" src="./js/index.js"></script>
-    <script type="module" src="./js/telegraphApi.js"></script>
+    <script type="module" src="./js/index copy.js"></script>
     <!-- <script src="index2.js"></script> -->
 </body>
 

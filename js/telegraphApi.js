@@ -6,8 +6,8 @@ async function getPageList(access_token, offset = 0, limit = 0) {
     
     // console.log(requestUrl.toString());
     // console.log(requestUrl.toString()); return;
-    // var response = await fetch('getPageList.json');
-    var response = await fetch(requestUrl);
+    var response = await fetch('getPageList.json');
+    // var response = await fetch(requestUrl);
     response = await response.json();
     
     return response;
@@ -31,7 +31,7 @@ async function getAuthUrl(access_token) {
     const requestUrl = new URL('getAccountInfo', baseUrl);
     requestUrl.search = new URLSearchParams({
         access_token,
-        fields: `["short_name","auth_url"]`
+        fields: `["short_name","author_name","auth_url","page_count"]`
     });
     // console.log(requestUrl.toString()); return;
     var response = await fetch(requestUrl);

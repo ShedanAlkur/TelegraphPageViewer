@@ -1,0 +1,38 @@
+.darkmode body {
+    --color-main: white;
+    --color-block: rgba(255, 255, 255, 0.3);
+    --color-disabled: rgba(255, 255, 255, 0.685);
+    background-color: black;
+}
+
+.darkmode .request-form {
+    border: none;
+    background-color: var(--color-block);
+    box-shadow: none;
+}
+
+.darkmode .page-block {
+    border-color: #0000;
+    background-color: var(--color-block);
+}
+
+.darkmode input{
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: inherit;
+}
+
+
+.darkmode .paginator menu>a:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+.darkmode .page-form>input[type=submit] {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.darkmode .page-form>input[type=submit]:hover {
+    /* background-color: rgb(81, 165, 95); */
+    background-color: var(--color-main);
+    color: black;
+}
