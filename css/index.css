@@ -1,6 +1,5 @@
 :root {
     --form-width: 350px;
-    --form-min-width: 282px;
     --setting-transition-time: 0.2s;
 }
 
@@ -74,7 +73,6 @@ input {
 .request-form {
     display: block;
     width: var(--form-width);
-    min-width: var(--form-min-width);
     margin: 10px auto;
     padding: 6px 8px;
     background-color: var(--color-block);
@@ -261,17 +259,9 @@ input.request-form__limit {
 }
 
 @media (max-width: 420px) {
-    body {
-        padding: 4px;
-    }
 
-    .search-form {
-        margin: 5px 5px;
+    .request-form {
+        margin: 5px auto;
         width: calc(100% - 10px * 2);
     }
-
-    label.search-form__access_token {
-        display: none;
-    }
-
 }

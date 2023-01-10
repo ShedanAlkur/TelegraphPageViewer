@@ -379,27 +379,34 @@ function getPaginatorDescription(offset, limit, total_count) {
 }
 
 async function loadPageList(access_token, offset, limit) {
-    hLoader.classList.remove(cssClassNames.disabledLoader);
-    const response = await Telegraph.getPageList(
-        access_token ? access_token : SANDBOX_ACCESS_TOKEN,
-        offset,
-        limit);
-    console.debug(response);
-    if (response.ok) {
-        const total_count = response.result.total_count;
-        variables.set(variableNames.totalCount, total_count);
-        hTopPaginatorDescription.innerText = getPaginatorDescription(offset, limit, total_count);
-        updatePageButtonHref(variables.get(variableNames.pageNumber));
-        response.result.pages.forEach(page => {
-            hPageList.appendChild(createBlock(page));
-        });
-    } else {
-        if (response.error === 'ACCESS_TOKEN_INVALID') {
-            hAccessToken.setCustomValidity(response.error);
-            hAccessToken.reportValidity();
+    try {
+        hLoader.classList.remove(cssClassNames.disabledLoader);
+        const response = await Telegraph.getPageList(
+            access_token ? access_token : SANDBOX_ACCESS_TOKEN,
+            offset,
+            limit);
+        console.debug(response);
+        if (response.ok) {
+            const total_count = response.result.total_count;
+            variables.set(variableNames.totalCount, total_count);
+            hTopPaginatorDescription.innerText = getPaginatorDescription(offset, limit, total_count);
+            updatePageButtonHref(variables.get(variableNames.pageNumber));
+            response.result.pages.forEach(page => {
+                hPageList.appendChild(createBlock(page));
+            });
+        } else {
+            if (response.error === 'ACCESS_TOKEN_INVALID') {
+                hAccessToken.setCustomValidity(response.error);
+                hAccessToken.reportValidity();
+            }
         }
     }
-    hLoader.classList.add(cssClassNames.disabledLoader);
+    catch (err) {
+        console.error(err);
+    }
+    finally {
+        hLoader.classList.add(cssClassNames.disabledLoader);
+    }
 }
 
 function updatePageButtonStatus(page_number) {
@@ -431,7 +438,6 @@ function updatePageButtonHref(page_number) {
     // to next page
     params.set(variableNames.offset, getOffset(limit, page_number + 1));
     hTopPaginator.toNextPage.href = '?' + params.toString();
-    console.log(`offset ${getOffset(limit, page_number + 1)} limit ${limit} page_number ${page_number}`);
     // to last page
     page_number = Math.floor(total_count / limit);
     page_number += ((total_count % limit == 0) ? 0 : 1);
