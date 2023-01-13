@@ -3,12 +3,12 @@
 
 ## Telegraph page viewer v3
 
-**[Open](https://shedanalkur.github.io/TelegraphPageViewer/?run "Page")** page of viewer
+**[Open](https://shedanalkur.github.io/TelegraphPageViewer/ "Page")** page of viewer
 
 Supported query url parameters:
 - `access_token` *(String)*.
 Access token of the Telegraph account. Sandbox account is used by default (from [Telegraph API tutorial](https://telegra.ph/api "Telegraph API tutorial")).
-`offset` *(Integer, default = 0)*.
+- `offset` *(Integer, default = 0)*.
 Sequential number of the first page to be returned.
 - `limit` *(Integer, 1-200, default = 50)*.
 Limits the number of pages to be retrieved.
@@ -44,3 +44,12 @@ Example 2: https://shedanalkur.github.io/TelegraphPageViewer/v2/?run&access_toke
 ## User script
 
 **[Install](https://github.com/ShedanAlkur/TelegraphPageViewer/raw/main/Telegraph_image_navigation.user.js "Install")** user script to navigate between images on telegraph.
+
+The extension settings are placed in the drop-down menu in the author/date line.
+
+**Features:**
+- Dark theme for telegraph.
+- Back to top button.
+- Navigation between images:
+	- Mouse clicks on the left and right side of the images.
+	- Left and right arrows on the keyboard.
