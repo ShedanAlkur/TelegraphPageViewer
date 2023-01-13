@@ -59,7 +59,7 @@ input {
     border-radius: 250px;    
     color: var(--color-main);
     border: 2px solid var(--color-main);
-    background-color: var(--color-background);
+    background-color: var(--color-block);
     cursor: pointer;
     opacity: 70%;
     visibility: visible;
@@ -84,6 +84,7 @@ input {
 .request-form__row {
     position: relative;
     display: flex;
+    justify-content: space-between;
     margin-top: 4px;
 }
 

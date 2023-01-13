@@ -92,10 +92,10 @@ const flagDelegates = new Map([
     [flagNames.hidePassword, () => {
         if (flags.get(flagNames.hidePassword)) {
             hAccessToken.setAttribute('type', 'password');
-            hCheckboxes.get(flagNames.hidePassword).setAttribute('title', 'Hide password');
+            hCheckboxes.get(flagNames.hidePassword).setAttribute('title', 'Show password');
         } else {
             hAccessToken.setAttribute('type', 'text');
-            hCheckboxes.get(flagNames.hidePassword).setAttribute('title', 'Show password');
+            hCheckboxes.get(flagNames.hidePassword).setAttribute('title', 'Hide password');
         }
     }],
     // is it okay?
@@ -227,10 +227,17 @@ function getHistoryStateObject() {
 
 function pushState() {
     console.debug('pushState');
-    if (history.state.access_token == variables.get(variableNames.access_token) &&
-        history.state.offset == variables.get(variableNames.offset) &&
-        history.state.limit == variables.get(variableNames.limit)) return;
-    history.pushState(getHistoryStateObject(), '', '');
+    const access_token = variables.get(variableNames.token);
+    const offset = variables.get(variableNames.offset);
+    const limit = variables.get(variableNames.limit);
+    if (history.state.access_token == access_token &&
+        history.state.offset == offset &&
+        history.state.limit == limit) return;
+    const params = new URLSearchParams();
+    // if (access_token) params.set(variableNames.token, access_token);
+    params.set(variableNames.offset, offset);
+    params.set(variableNames.limit, limit);
+    history.pushState(getHistoryStateObject(), '', '?' + params.toString());
 }
 
 addEventListener('popstate', (event) => {
@@ -293,8 +300,22 @@ function handler_onClick_paginatorButton(event) {
     hPageForm.requestSubmit();
 }
 
+document.getElementById('copy_url').addEventListener('click', (event) => {
+    event.preventDefault();
+    const params = new URLSearchParams();
+    const access_token = variables.get(variableNames.token);
+    if (access_token) params.set(variableNames.token, access_token);
+    const limit = variables.get(variableNames.limit);
+    params.set(variableNames.limit, limit);
+    const offset = variables.get(variableNames.offset);
+    params.set(variableNames.offset, offset);
+
+    const url = new URL(window.location.href);
+    url.search = params.toString();
+    navigator.clipboard.writeText(url.toString());
+});
+
 window.addEventListener('scroll', (event) => {
-    console.log('scroll');
     toggleElementClass(hTopButton, cssClassNames.hiddenTopButton, window.scrollY > 250, true)
 })
 
@@ -322,7 +343,6 @@ hSearchForm.addEventListener('submit', async (event) => {
     sessionStorage.setItem(variableNames.pageNumber, pageNumber);
     updatePageButtonStatus(pageNumber);
 
-    hPageList.innerHTML = '';
     loadPageList(
         variables.get(variableNames.token),
         variables.get(variableNames.offset),
@@ -380,6 +400,7 @@ function getPaginatorDescription(offset, limit, total_count) {
 
 async function loadPageList(access_token, offset, limit) {
     try {
+        hPageList.innerHTML = '';
         hLoader.classList.remove(cssClassNames.disabledLoader);
         const response = await Telegraph.getPageList(
             access_token ? access_token : SANDBOX_ACCESS_TOKEN,
@@ -387,6 +408,7 @@ async function loadPageList(access_token, offset, limit) {
             limit);
         console.debug(response);
         if (response.ok) {
+            hPageList.innerHTML = '';
             const total_count = response.result.total_count;
             variables.set(variableNames.totalCount, total_count);
             hTopPaginatorDescription.innerText = getPaginatorDescription(offset, limit, total_count);
@@ -451,7 +473,6 @@ document.getElementById('access_token_auth').addEventListener('click', async (ev
     const access_token = variables.get(variableNames.token);
     const response = await Telegraph.getAuthUrl(access_token ? access_token : SANDBOX_ACCESS_TOKEN);
     hAuthUrl.innerText = '';
-    console.log(response);
     if (response.ok) {
         const total_count = response.result.total_count;
         variables.set(variableNames.totalCount, total_count);
@@ -477,7 +498,9 @@ addEventListener('DOMContentLoaded', (event) => {
     console.debug('%cDOMContentLoaded', 'color: yellow;');
     initiateInternalValues();
 
-    if (history.state == null) history.replaceState(getHistoryStateObject(), '', '');
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.delete(variableNames.token);
+    history.replaceState(getHistoryStateObject(), '', '?' + urlParams.toString());
 
     // checkbox inChange handlers
     hCheckboxes.forEach((checkbox, flagName) => {

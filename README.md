@@ -5,9 +5,12 @@
 
 **[Open](https://shedanalkur.github.io/TelegraphPageViewer/ "Page")** page of viewer
 
-Supported query url parameters:
+
+
+**Supported query url parameters:**
 - `access_token` *(String)*.
 Access token of the Telegraph account. Sandbox account is used by default (from [Telegraph API tutorial](https://telegra.ph/api "Telegraph API tutorial")).
+**Beware!** The access token parameter will be automatically deleted from the browser address bar after the page loads.
 - `offset` *(Integer, default = 0)*.
 Sequential number of the first page to be returned.
 - `limit` *(Integer, 1-200, default = 50)*.
