@@ -6,8 +6,8 @@ async function getPageList(access_token, offset = 0, limit = 0) {
     
     // console.log(requestUrl.toString());
     // console.log(requestUrl.toString()); return;
-    var response = await fetch('temp/getPageList.json');
-    // var response = await fetch(requestUrl);
+    // var response = await fetch('temp/getPageList.json');
+    var response = await fetch(requestUrl);
     response = await response.json();
     
     return response;
