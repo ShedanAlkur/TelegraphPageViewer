@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Image navigation on telegraph
 // @namespace    https://github.com/ShedanAlkur/
-// @version      0.1.10
+// @version      0.1.11
 // @downloadURL  https://github.com/ShedanAlkur/TelegraphPageViewer/raw/main/Telegraph_image_navigation.user.js
 // @updateURL    https://github.com/ShedanAlkur/TelegraphPageViewer/raw/main/Telegraph_image_navigation.user.js
 // @description  More options for navigating between pictures on telegra.ph
@@ -20,6 +20,8 @@
 
     const backwardLinkStyle =
         `.backward-link{position:absolute;z-index:2;width:calc(40% + 100px);height:100%;left:-100px;border:none!important}.backward-link:hover{background:linear-gradient(90deg,rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.15) 85%,rgba(0,0,0,0) 100%)}`;
+    const imageStyle =
+        `.figure_wrapper a{border-bottom: none!important;}`;
     const imageCounterStyle =
         `.image-counter{display:inline-block;position:fixed;z-index:999;bottom:0;left:50%;transform:translate(-50%,0);margin-bottom:12px;padding:4px 12px;color:#000;background-color:#fff;font-family:CustomSansSerif,'Lucida Grande',Arial,sans-serif;font-weight:600;font-style:normal;font-size:17px;text-decoration:none;border:2px solid #333;border-radius:16px;text-transform:uppercase;opacity:70%;cursor:default}.image-counter:hover{opacity:30%}.image-counter:empty{display:none}`;
     const addressElement =
@@ -269,6 +271,7 @@
             document.querySelector('html').style.scrollBehavior = 'smooth';
         }
         addGlobalStyle(buttonTop +
+            imageStyle +
             addressElement +
             dropdownMenu +
             backwardLinkStyle +
