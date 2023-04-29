@@ -2,6 +2,16 @@
 <html lang="en">
 
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-F45FVDGNL5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-F45FVDGNL5');
+    </script>
+
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,7 +42,8 @@
                         autocomplete="new-password"
                         title="Access token of the Telegraph account.&#10;The Sandbox access token is used by default.">
                     <input type="checkbox" id="hide_password" name="hide_password" title="Hide password">
-                    <input type="button" id="access_token_auth" value="Auth" title="Get a link to authorize with an access token">
+                    <input type="button" id="access_token_auth" value="Auth"
+                        title="Get a link to authorize with an access token">
                 </div>
                 <a class="auth-url" href="" id="auth_url"></a>
                 <!-- offset, limit, fetch -->
