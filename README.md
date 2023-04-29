@@ -58,5 +58,6 @@ The extension settings are placed in the drop-down menu in the author/date line.
 	- Left and right arrows on the keyboard.
 
 **Extension screenshots:**
+
 ![Extension_screenshot_1](assets/Extension_screenshot_1.png)
 ![Extension_screenshot_1](assets/Extension_screenshot_2.png)
